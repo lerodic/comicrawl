@@ -1,4 +1,5 @@
 const TYPES = {
+  Comicrawl: Symbol.for("Comicrawl"),
   Prompt: Symbol.for("Prompt"),
   Logger: Symbol.for("Logger"),
   Crawler: Symbol.for("Crawler"),

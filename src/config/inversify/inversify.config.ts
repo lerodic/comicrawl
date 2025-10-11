@@ -1,3 +1,4 @@
+import Comicrawl from "../../core/Comicrawl";
 import Chromium from "../../core/crawl/Chromium";
 import CrawlerFactory from "../../core/factories/CrawlerFactory";
 import Logger from "../../core/io/Logger";
@@ -9,6 +10,8 @@ import { Container } from "inversify";
 
 function setupContainer(): Container {
   const container = new Container();
+
+  container.bind<Comicrawl>(TYPES.Comicrawl).to(Comicrawl);
 
   container.bind<Prompt>(TYPES.Prompt).to(Prompt);
 
