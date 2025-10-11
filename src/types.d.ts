@@ -12,3 +12,5 @@ export type DomainMap = Map<SupportedHost, HostInfo>;
 export interface Crawler {
   extractTitle(url: string): Promise<string>;
 }
+
+export type CrawlerFactoryFn = (url: string) => Crawler;
