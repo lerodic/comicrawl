@@ -25,6 +25,10 @@ class Chromium {
   }
 
   private async setupPage() {
+    if (this.page) {
+      return this.page;
+    }
+
     const page = await this.openNewPage();
 
     page.setDefaultTimeout(0);
@@ -58,10 +62,20 @@ class Chromium {
   }
 
   async terminate() {
-    await this.browser?.close();
+    await this.closePage();
+    await this.closeBrowser();
+  }
 
-    this.page = undefined;
-    this.browser = undefined;
+  async closePage() {
+    if (this.page?.isClosed()) {
+      return;
+    }
+
+    await this.page?.close();
+  }
+
+  async closeBrowser() {
+    await this.browser?.close();
   }
 }
 

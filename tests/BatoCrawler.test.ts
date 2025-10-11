@@ -11,6 +11,7 @@ describe("BatoCrawler", () => {
   beforeEach(() => {
     mockPage = {
       $eval: jest.fn(),
+      $$eval: jest.fn(),
       close: jest.fn(),
     } as unknown as jest.Mocked<Page>;
 
@@ -47,5 +48,35 @@ describe("BatoCrawler", () => {
         expect(result).toStrictEqual(title);
       }
     );
+  });
+
+  describe("extractChapters", () => {
+    it.each([
+      {
+        url: "https://test.com",
+        links: [
+          {
+            href: "https://test.com/chapter1",
+            textContent: "Chapter 1",
+          },
+          {
+            href: "https://test.com/chapter2",
+            textContent: "Chapter 2",
+          },
+        ],
+      },
+    ])("should extract chapters correctly", async ({ url, links }) => {
+      const chapters = links
+        .map((link) => ({
+          url: link.href,
+          title: link.textContent,
+        }))
+        .reverse();
+      mockPage.$$eval.mockResolvedValueOnce(chapters);
+
+      const result = await crawler.extractChapters(url);
+
+      expect(result).toStrictEqual(chapters);
+    });
   });
 });
