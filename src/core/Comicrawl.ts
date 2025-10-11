@@ -18,11 +18,10 @@ class Comicrawl {
     try {
       const { title } = await this.prepareDownload();
       console.log(title);
-
-      await this.shutdown();
     } catch {
-      await this.shutdown();
     }
+
+    await this.shutdown();
   }
 
   private async prepareDownload() {
