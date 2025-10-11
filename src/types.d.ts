@@ -1,4 +1,5 @@
 import { Newable } from "inversify";
+import { DOWNLOAD_OPTIONS } from "./config/constants";
 
 export type SupportedHost = "Bato";
 
@@ -14,3 +15,6 @@ export interface Crawler {
 }
 
 export type CrawlerFactoryFn = (url: string) => Crawler;
+
+
+export type DownloadOption = (typeof DOWNLOAD_OPTIONS)[number];

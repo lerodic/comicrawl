@@ -25,3 +25,5 @@ function extractSupportedDomains(map: DomainMap): string[] {
 export const DOMAIN_MAP = createDomainMap();
 
 export const SUPPORTED_DOMAINS = extractSupportedDomains(DOMAIN_MAP);
+
+export const DOWNLOAD_OPTIONS = ["All", "Partial", "Selective"] as const;
