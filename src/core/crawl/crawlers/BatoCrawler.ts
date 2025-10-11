@@ -1,6 +1,6 @@
 import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
-import { Crawler } from "../../../types";
+import { Chapter, Crawler } from "../../../types";
 import TYPES from "../../../config/inversify/inversify.types";
 import Chromium from "../Chromium";
 
@@ -16,9 +16,22 @@ class BatoCrawler implements Crawler {
       return anchor.textContent ?? "Untitled";
     });
 
-    await page.close();
-
     return title;
+  }
+
+  async extractChapters(url: string): Promise<Chapter[]> {
+    const page = await this.chromium.openPage(url);
+
+    const chapters = await page.$$eval("a.chapt", (links) => {
+      return links
+        .map((link) => ({
+          url: (link as HTMLAnchorElement).href,
+          title: link.textContent as string,
+        }))
+        .reverse();
+    });
+
+    return chapters;
   }
 }
 
