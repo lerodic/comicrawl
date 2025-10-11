@@ -12,9 +12,14 @@ export type DomainMap = Map<SupportedHost, HostInfo>;
 
 export interface Crawler {
   extractTitle(url: string): Promise<string>;
+  extractChapters(url: string): Promise<Chapter[]>;
 }
 
 export type CrawlerFactoryFn = (url: string) => Crawler;
 
+export interface Chapter {
+  title: string;
+  url: string;
+}
 
 export type DownloadOption = (typeof DOWNLOAD_OPTIONS)[number];
