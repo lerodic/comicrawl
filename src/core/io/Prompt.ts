@@ -6,6 +6,8 @@ import CONFIG from "../../config/app.config";
 import TYPES from "../../config/inversify/inversify.types";
 import Logger from "./Logger";
 import chalk from "chalk";
+import { Chapter, DownloadOption } from "../../types";
+import { DOWNLOAD_OPTIONS } from "../../config/constants";
 
 @boundClass
 @injectable()
@@ -43,6 +45,60 @@ class Prompt {
     });
 
     return this.getUrl();
+  }
+
+  async getDownloadOption(): Promise<DownloadOption> {
+    const { downloadOption } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "downloadOption",
+        message: chalk.magentaBright.bold("I would like to download..."),
+        choices: DOWNLOAD_OPTIONS,
+      },
+    ]);
+
+    return downloadOption;
+  }
+
+  async getChaptersStartingAt(chapters: Chapter[]): Promise<number> {
+    const { startingPoint } = await inquirer.prompt([
+      {
+        type: "number",
+        name: "startingPoint",
+        message: "Which chapter would you like to start at?",
+      },
+    ]);
+
+    return this.isValidStartingPoint(startingPoint, chapters.length)
+      ? startingPoint
+      : this.handleStartingPointRetrievalError(chapters);
+  }
+
+  private isValidStartingPoint(input: number, max: number): boolean {
+    return input >= 1 && input <= max;
+  }
+
+  private async handleStartingPointRetrievalError(
+    chapters: Chapter[]
+  ): Promise<number> {
+    this.logger.error(
+      `Invalid chapter selection. Value must be >= 1 and <= ${chapters.length}.`
+    );
+
+    return this.getChaptersStartingAt(chapters);
+  }
+
+  async getChaptersFromList(chapters: Chapter[]): Promise<string[]> {
+    const { selectedChapters } = await inquirer.prompt([
+      {
+        type: "checkbox",
+        name: "selectedChapters",
+        message: "Select all chapters you wish to download:",
+        choices: chapters.map((chapter) => chapter.title),
+      },
+    ]);
+
+    return selectedChapters;
   }
 }
 
