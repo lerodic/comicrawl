@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsc && npm run start",
     "build": "tsc",
-    "start": "node ./dist/main.js"
+    "start": "node ./dist/main.js",
+    "test": "jest ./tests --config ./jest.config.js --runInBand --verbose"
   },
   "repository": {
     "type": "git",
