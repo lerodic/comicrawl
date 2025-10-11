@@ -67,4 +67,76 @@ describe("Prompt", () => {
       }
     );
   });
+
+  describe("getChaptersStartingAt", () => {
+    it.each([
+      {
+        startingPoint: 1,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+        ],
+      },
+      {
+        startingPoint: 2,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+          { title: "3", url: "3" },
+        ],
+      },
+    ])(
+      "should return '$startingPoint' if user enters a valid starting point",
+      async ({ startingPoint, chapters }) => {
+        mockInquirer.prompt.mockResolvedValueOnce({ startingPoint });
+
+        const result = await prompt.getChaptersStartingAt(chapters);
+
+        expect(result).toStrictEqual(startingPoint);
+      }
+    );
+
+    it.each([
+      {
+        startingPoint: 0,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+        ],
+      },
+      {
+        startingPoint: 4,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+          { title: "3", url: "3" },
+        ],
+      },
+      {
+        startingPoint: -1,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+          { title: "3", url: "3" },
+        ],
+      },
+    ])(
+      "should log error if user enters invalid starting point: '$startingPoint'",
+      async ({ startingPoint, chapters }) => {
+        mockInquirer.prompt.mockResolvedValueOnce({ startingPoint });
+        const getChaptersStartingAtSpy = jest
+          .spyOn(prompt, "getChaptersStartingAt")
+          .mockImplementationOnce(Prompt.prototype.getChaptersStartingAt)
+          .mockResolvedValueOnce(1);
+
+        const result = await prompt.getChaptersStartingAt(chapters);
+
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          `Invalid chapter selection. Value must be >= 1 and <= ${chapters.length}.`
+        );
+        expect(getChaptersStartingAtSpy).toHaveBeenCalledTimes(2);
+        expect(result).toStrictEqual(1);
+      }
+    );
+  });
 });
