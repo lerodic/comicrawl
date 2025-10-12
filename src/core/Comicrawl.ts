@@ -3,9 +3,11 @@ import { inject, injectable } from "inversify";
 import TYPES from "../config/inversify/inversify.types";
 import Prompt from "./io/Prompt";
 import CrawlerFactory from "./factories/CrawlerFactory";
-import { Chapter } from "../types";
+import { Chapter, DownloadableChapter, DownloadInfo } from "../types";
 import EmptyGraphicNovel from "./errors/EmptyGraphicNovel";
 import Logger from "./io/Logger";
+import pLimit from "p-limit";
+import ProgressManager from "./io/ProgressManager";
 import CrawlerInitializationFailed from "./errors/CrawlerInitializationFailed";
 
 @boundClass
@@ -14,14 +16,15 @@ class Comicrawl {
   constructor(
     @inject(TYPES.Prompt) private prompt: Prompt,
     @inject(TYPES.CrawlerFactory) private crawlerFactory: CrawlerFactory,
-    @inject(TYPES.Logger) private logger: Logger
+    @inject(TYPES.Logger) private logger: Logger,
+    @inject(TYPES.ProgressManager) private progress: ProgressManager
   ) {}
 
   async run() {
     try {
       const { title, chapters } = await this.prepareDownload();
-      console.log(title);
-      console.log(chapters);
+
+      this.logger.logDownloadStarted(title, chapters.length);
     } catch (err: any) {
       this.handleError(err);
     }
@@ -29,13 +32,16 @@ class Comicrawl {
     await this.shutdown();
   }
 
-  private async prepareDownload() {
+  private async prepareDownload(): Promise<DownloadInfo> {
     const url = await this.prompt.getUrl();
 
     this.logger.logChapterRequest();
 
     const title = await this.crawlerFactory.getCrawler(url).extractTitle(url);
-    const chapters = await this.getChaptersToDownload(url, title);
+    const chapters = await this.prepareChaptersForDownload(
+      title,
+      await this.getChaptersToDownload(url, title)
+    );
 
     return { title, chapters };
   }
@@ -45,7 +51,7 @@ class Comicrawl {
     title: string
   ): Promise<Chapter[]> {
     const chapters = await this.crawlerFactory
-      .getCrawler(url)
+      .getCrawler()
       .extractChapters(url);
 
     if (this.isEmptyGraphicNovel(chapters)) {
@@ -88,6 +94,32 @@ class Comicrawl {
     return chapters.filter((chapter) =>
       selectedChapters.includes(chapter.title)
     );
+  }
+
+  private async prepareChaptersForDownload(
+    title: string,
+    chapters: Chapter[]
+  ): Promise<DownloadableChapter[]> {
+    const limit = pLimit(10);
+
+    this.progress.createChapterPreparationBar(title, chapters.length);
+
+    const downloadableChapters = await Promise.all(
+      chapters.map((chapter) =>
+        limit(async () => {
+          const imageLinks = await this.crawlerFactory
+            .getCrawler()
+            .extractImageLinks(chapter.url);
+          this.progress.advanceChapterPreparation();
+
+          return { ...chapter, imageLinks };
+        })
+      )
+    );
+
+    this.progress.completeChapterPreparation();
+
+    return downloadableChapters;
   }
 
   private handleError(err: any) {

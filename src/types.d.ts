@@ -24,7 +24,17 @@ export interface Chapter {
   url: string;
 }
 
+export type DownloadableChapter = Chapter & {
+  imageLinks: string[];
+};
+
 export type DownloadOption = (typeof DOWNLOAD_OPTIONS)[number];
+
+export interface DownloadInfo {
+  title: string;
+  chapters: DownloadableChapter[];
+}
+
 export interface ProgressInfo {
   title?: string;
   itemsTotal: number;
