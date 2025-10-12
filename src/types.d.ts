@@ -13,6 +13,7 @@ export type DomainMap = Map<SupportedHost, HostInfo>;
 export interface Crawler {
   extractTitle(url: string): Promise<string>;
   extractChapters(url: string): Promise<Chapter[]>;
+  terminate(): Promise<void>;
 }
 
 export type CrawlerFactoryFn = (url: string) => Crawler;
