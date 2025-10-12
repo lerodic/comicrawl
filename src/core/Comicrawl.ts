@@ -6,6 +6,7 @@ import CrawlerFactory from "./factories/CrawlerFactory";
 import { Chapter } from "../types";
 import EmptyGraphicNovel from "./errors/EmptyGraphicNovel";
 import Logger from "./io/Logger";
+import CrawlerInitializationFailed from "./errors/CrawlerInitializationFailed";
 
 @boundClass
 @injectable()
@@ -22,9 +23,7 @@ class Comicrawl {
       console.log(title);
       console.log(chapters);
     } catch (err: any) {
-      if (err instanceof EmptyGraphicNovel) {
-        this.logger.error(err.message);
-      }
+      this.handleError(err);
     }
 
     await this.shutdown();
@@ -88,6 +87,21 @@ class Comicrawl {
 
     return chapters.filter((chapter) =>
       selectedChapters.includes(chapter.title)
+    );
+  }
+
+  private handleError(err: any) {
+    const message = this.isApplicationError(err)
+      ? err.message
+      : "Something unexpected happened.";
+
+    this.logger.error(`\n${message}`);
+  }
+
+  private isApplicationError(err: any): boolean {
+    return (
+      err instanceof EmptyGraphicNovel ||
+      err instanceof CrawlerInitializationFailed
     );
   }
 
