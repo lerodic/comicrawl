@@ -33,6 +33,9 @@ class BatoCrawler implements Crawler {
 
     return chapters;
   }
+  async terminate() {
+    await this.chromium.terminate();
+  }
 }
 
 export default BatoCrawler;
