@@ -3,7 +3,6 @@ import { inject, injectable } from "inversify";
 import TYPES from "../config/inversify/inversify.types";
 import Prompt from "./io/Prompt";
 import CrawlerFactory from "./factories/CrawlerFactory";
-import Chromium from "./crawl/Chromium";
 import { Chapter } from "../types";
 import EmptyGraphicNovel from "./errors/EmptyGraphicNovel";
 import Logger from "./io/Logger";
@@ -14,7 +13,6 @@ class Comicrawl {
   constructor(
     @inject(TYPES.Prompt) private prompt: Prompt,
     @inject(TYPES.CrawlerFactory) private crawlerFactory: CrawlerFactory,
-    @inject(TYPES.Chromium) private chromium: Chromium,
     @inject(TYPES.Logger) private logger: Logger
   ) {}
 
@@ -94,7 +92,7 @@ class Comicrawl {
   }
 
   private async shutdown() {
-    await this.chromium.terminate();
+    await this.crawlerFactory.getCrawler().terminate();
   }
 }
 
