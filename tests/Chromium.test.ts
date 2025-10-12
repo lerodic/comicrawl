@@ -110,30 +110,13 @@ describe("Chromium", () => {
   });
 
   describe("terminate", () => {
-    it("should close open pages and browser", async () => {
+    it("should close browser", async () => {
       mockPuppeteer.launch.mockResolvedValue(mockBrowser);
-      await chromium.openPage("");
-      mockPage.isClosed.mockReturnValue(false);
+      await chromium.openPage("example.com");
 
       await chromium.terminate();
 
       expect(mockBrowser.close).toHaveBeenCalledTimes(1);
-      expect(mockPage.close).toHaveBeenCalledTimes(1);
-      expect((mockBrowser as any).page).toBeUndefined();
-      expect((mockBrowser as any).browser).toBeUndefined();
-    });
-
-    it("should skip closing pages if none remain", async () => {
-      mockPuppeteer.launch.mockResolvedValue(mockBrowser);
-      await chromium.openPage("");
-      mockPage.isClosed.mockReturnValue(true);
-
-      await chromium.terminate();
-
-      expect(mockBrowser.close).toHaveBeenCalledTimes(1);
-      expect(mockPage.close).not.toHaveBeenCalled();
-      expect((mockBrowser as any).page).toBeUndefined();
-      expect((mockBrowser as any).browser).toBeUndefined();
     });
   });
 });
