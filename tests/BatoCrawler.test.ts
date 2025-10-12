@@ -47,6 +47,7 @@ describe("BatoCrawler", () => {
         const result = await crawler.extractTitle(url);
 
         expect(result).toStrictEqual(title);
+        expect(mockPage.close).toHaveBeenCalled();
       }
     );
   });
@@ -78,6 +79,7 @@ describe("BatoCrawler", () => {
       const result = await crawler.extractChapters(url);
 
       expect(result).toStrictEqual(chapters);
+      expect(mockPage.close).toHaveBeenCalled();
     });
   });
 
