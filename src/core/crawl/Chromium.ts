@@ -33,11 +33,19 @@ class Chromium {
   }
 
   private async openNewPage() {
-    this.browser = this.shouldUseBundledInstance()
-      ? await this.launchBundledChromiumInstance()
-      : await this.launchCustomChromiumInstance();
+    const browser = await this.launchBrowser();
 
-    return this.browser.newPage();
+    return browser.newPage();
+  }
+
+  private async launchBrowser() {
+    if (!this.browser) {
+      this.browser = this.shouldUseBundledInstance()
+        ? await this.launchBundledChromiumInstance()
+        : await this.launchCustomChromiumInstance();
+    }
+
+    return this.browser;
   }
 
   private shouldUseBundledInstance(): boolean {
@@ -57,19 +65,6 @@ class Chromium {
   }
 
   async terminate() {
-    await this.closePage();
-    await this.closeBrowser();
-  }
-
-  async closePage() {
-    if (this.page?.isClosed()) {
-      return;
-    }
-
-    await this.page?.close();
-  }
-
-  async closeBrowser() {
     await this.browser?.close();
   }
 }
