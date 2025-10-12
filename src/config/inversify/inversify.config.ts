@@ -17,7 +17,10 @@ function setupContainer(): Container {
 
   container.bind<Logger>(TYPES.Logger).to(Logger);
 
-  container.bind<CrawlerFactory>(TYPES.CrawlerFactory).to(CrawlerFactory);
+  container
+    .bind<CrawlerFactory>(TYPES.CrawlerFactory)
+    .to(CrawlerFactory)
+    .inSingletonScope();
 
   container.bind<CrawlerFactoryFn>(TYPES.CrawlerFactoryFn).toFactory(() => {
     return (url: string) => {
