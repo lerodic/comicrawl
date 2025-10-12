@@ -17,6 +17,7 @@ describe("BatoCrawler", () => {
 
     mockChromium = {
       openPage: jest.fn().mockReturnValue(mockPage),
+      terminate: jest.fn(),
     } as unknown as jest.Mocked<Chromium>;
 
     crawler = new BatoCrawler(mockChromium);
@@ -77,6 +78,14 @@ describe("BatoCrawler", () => {
       const result = await crawler.extractChapters(url);
 
       expect(result).toStrictEqual(chapters);
+    });
+  });
+
+  describe("terminate", () => {
+    it("should delegate to 'Chromium' instance for application shutdown", async () => {
+      await crawler.terminate();
+
+      expect(mockChromium.terminate).toHaveBeenCalled();
     });
   });
 });
