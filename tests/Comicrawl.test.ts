@@ -5,6 +5,7 @@ import { Crawler } from "../src/types";
 import CrawlerFactory from "../src/core/factories/CrawlerFactory";
 import Chromium from "../src/core/crawl/Chromium";
 import Logger from "../src/core/io/Logger";
+import CrawlerInitializationFailed from "../src/core/errors/CrawlerInitializationFailed";
 
 describe("Comicrawl", () => {
   let comicrawl: Comicrawl;
@@ -198,38 +199,47 @@ describe("Comicrawl", () => {
       }
     );
 
-    it.each([
-      {
-        title: "Chapterless comic",
-        url: "example.com",
-      },
-    ])(
-      "should exit prematurely if graphic novel does not contain any chapters",
-      async ({ title, url }) => {
-        mockPrompt.getUrl.mockResolvedValue(url);
-        mockPrompt.getDownloadOption.mockResolvedValue("All");
-        mockCrawler.extractTitle.mockResolvedValue(title);
-        mockCrawler.extractChapters.mockResolvedValue([]);
+    it("should exit early if graphic novel does not contain any chapters", async () => {
+      const title = "Chapterless comic";
+      const url = "test.com";
+      mockPrompt.getUrl.mockResolvedValue(url);
+      mockPrompt.getDownloadOption.mockResolvedValue("All");
+      mockCrawler.extractTitle.mockResolvedValue(title);
+      mockCrawler.extractChapters.mockResolvedValue([]);
 
-        await comicrawl.run();
+      await comicrawl.run();
 
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          `${title} is empty. Aborting.`
-        );
-        expect(mockChromium.terminate).toHaveBeenCalledTimes(1);
-      }
-    );
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        `\n${title} is empty. Aborting.`
+      );
+      expect(mockCrawler.terminate).toHaveBeenCalledTimes(1);
+    });
 
-    it("should terminate correctly on error", async () => {
-      const logSpy = jest.spyOn(console, "log");
+    it("should exit early if crawler initialization fails", async () => {
+      mockPrompt.getUrl.mockResolvedValue("test.com");
+      mockCrawlerFactory.getCrawler.mockImplementationOnce(() => {
+        throw new CrawlerInitializationFailed();
+      });
+
+      await comicrawl.run();
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "\nFailed to initialize crawler. Please try again.\n"
+      );
+      expect(mockCrawler.terminate).toHaveBeenCalled();
+    });
+
+    it("should terminate correctly on unexpected error", async () => {
       mockPrompt.getUrl.mockImplementationOnce(() => {
         throw new Error();
       });
 
       await comicrawl.run();
 
-      expect(logSpy).not.toHaveBeenCalled();
-      expect(mockChromium.terminate).toHaveBeenCalledTimes(1);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "\nSomething unexpected happened."
+      );
+      expect(mockCrawler.terminate).toHaveBeenCalledTimes(1);
     });
   });
 });
