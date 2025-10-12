@@ -37,6 +37,19 @@ class BatoCrawler implements Crawler {
 
     return chapters;
   }
+
+  async extractImageLinks(url: string): Promise<string[]> {
+    const page = await this.chromium.openPage(url, "load");
+
+    const imageLinks = await page.$$eval("img.page-img", (images) => {
+      return images.map((image) => (image as HTMLImageElement).src);
+    });
+
+    await page.close();
+
+    return imageLinks;
+  }
+
   async terminate() {
     await this.chromium.terminate();
   }
