@@ -37,7 +37,7 @@ class Prompt {
 
   private handleUrlRetrievalError() {
     this.logger.error(
-      "Please enter a valid URL. Below is a list of valid domains:\n"
+      "\nPlease enter a valid URL. Below is a list of valid domains:\n"
     );
 
     CONFIG.SUPPORTED_DOMAINS.forEach((domain) => {
@@ -82,7 +82,7 @@ class Prompt {
     chapters: Chapter[]
   ): Promise<number> {
     this.logger.error(
-      `Invalid chapter selection. Value must be >= 1 and <= ${chapters.length}.`
+      `\nInvalid chapter selection. Value must be >= 1 and <= ${chapters.length}.\n`
     );
 
     return this.getChaptersStartingAt(chapters);

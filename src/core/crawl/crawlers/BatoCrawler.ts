@@ -16,6 +16,8 @@ class BatoCrawler implements Crawler {
       return anchor.textContent ?? "Untitled";
     });
 
+    await page.close();
+
     return title;
   }
 
@@ -31,7 +33,25 @@ class BatoCrawler implements Crawler {
         .reverse();
     });
 
+    await page.close();
+
     return chapters;
+  }
+
+  async extractImageLinks(url: string): Promise<string[]> {
+    const page = await this.chromium.openPage(url, "load");
+
+    const imageLinks = await page.$$eval("img.page-img", (images) => {
+      return images.map((image) => (image as HTMLImageElement).src);
+    });
+
+    await page.close();
+
+    return imageLinks;
+  }
+
+  async terminate() {
+    await this.chromium.terminate();
   }
 }
 

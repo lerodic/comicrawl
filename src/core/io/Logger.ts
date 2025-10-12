@@ -21,7 +21,17 @@ class Logger {
     this.info(
       `Found ${chalk.blueBright.bold(
         chapterCounter
-      )} chapters for ${chalk.blueBright.bold(title)}.\n`
+      )} chapters for '${chalk.blueBright.bold(title)}'.\n`
+    );
+  }
+
+  logDownloadStarted(title: string, chapterCounter: number) {
+    this.info(
+      `\n${chalk.blueBright.bold(
+        chapterCounter
+      )} chapters of '${chalk.blueBright.bold(
+        title
+      )}' prepared. Starting download.`
     );
   }
 }

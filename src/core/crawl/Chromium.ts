@@ -1,6 +1,6 @@
 import { boundClass } from "autobind-decorator";
 import { injectable } from "inversify";
-import puppeteer, { Browser, Page, PuppeteerLifeCycleEvent } from "puppeteer";
+import puppeteer, { Browser, PuppeteerLifeCycleEvent } from "puppeteer";
 import CONFIG from "../../config/app.config";
 import MissingChromiumInstance from "../errors/MissingChromiumInstance";
 
@@ -8,27 +8,22 @@ import MissingChromiumInstance from "../errors/MissingChromiumInstance";
 @injectable()
 class Chromium {
   private browser: Browser | undefined = undefined;
-  private page: Page | undefined = undefined;
 
   async openPage(
     url: string,
     waitUntil: PuppeteerLifeCycleEvent = "domcontentloaded"
   ) {
-    this.page = await this.setupPage();
+    const page = await this.setupPage();
 
-    await this.page.goto(url, {
+    await page.goto(url, {
       waitUntil,
       timeout: 0,
     });
 
-    return this.page;
+    return page;
   }
 
   private async setupPage() {
-    if (this.page) {
-      return this.page;
-    }
-
     const page = await this.openNewPage();
 
     page.setDefaultTimeout(0);
@@ -38,11 +33,19 @@ class Chromium {
   }
 
   private async openNewPage() {
-    this.browser = this.shouldUseBundledInstance()
-      ? await this.launchBundledChromiumInstance()
-      : await this.launchCustomChromiumInstance();
+    const browser = await this.launchBrowser();
 
-    return this.browser.newPage();
+    return browser.newPage();
+  }
+
+  private async launchBrowser() {
+    if (!this.browser) {
+      this.browser = this.shouldUseBundledInstance()
+        ? await this.launchBundledChromiumInstance()
+        : await this.launchCustomChromiumInstance();
+    }
+
+    return this.browser;
   }
 
   private shouldUseBundledInstance(): boolean {
@@ -62,19 +65,6 @@ class Chromium {
   }
 
   async terminate() {
-    await this.closePage();
-    await this.closeBrowser();
-  }
-
-  async closePage() {
-    if (this.page?.isClosed()) {
-      return;
-    }
-
-    await this.page?.close();
-  }
-
-  async closeBrowser() {
     await this.browser?.close();
   }
 }

@@ -13,6 +13,8 @@ export type DomainMap = Map<SupportedHost, HostInfo>;
 export interface Crawler {
   extractTitle(url: string): Promise<string>;
   extractChapters(url: string): Promise<Chapter[]>;
+  extractImageLinks(url: string): Promise<string[]>;
+  terminate(): Promise<void>;
 }
 
 export type CrawlerFactoryFn = (url: string) => Crawler;
@@ -22,4 +24,19 @@ export interface Chapter {
   url: string;
 }
 
+export type DownloadableChapter = Chapter & {
+  imageLinks: string[];
+};
+
 export type DownloadOption = (typeof DOWNLOAD_OPTIONS)[number];
+
+export interface DownloadInfo {
+  title: string;
+  chapters: DownloadableChapter[];
+}
+
+export interface ProgressInfo {
+  title?: string;
+  itemsTotal: number;
+  itemsCompleted: number;
+}

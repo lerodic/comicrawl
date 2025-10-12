@@ -17,6 +17,7 @@ describe("BatoCrawler", () => {
 
     mockChromium = {
       openPage: jest.fn().mockReturnValue(mockPage),
+      terminate: jest.fn(),
     } as unknown as jest.Mocked<Chromium>;
 
     crawler = new BatoCrawler(mockChromium);
@@ -46,6 +47,7 @@ describe("BatoCrawler", () => {
         const result = await crawler.extractTitle(url);
 
         expect(result).toStrictEqual(title);
+        expect(mockPage.close).toHaveBeenCalled();
       }
     );
   });
@@ -77,6 +79,42 @@ describe("BatoCrawler", () => {
       const result = await crawler.extractChapters(url);
 
       expect(result).toStrictEqual(chapters);
+      expect(mockPage.close).toHaveBeenCalled();
+    });
+  });
+
+  describe("terminate", () => {
+    it("should delegate to 'Chromium' instance for application shutdown", async () => {
+      await crawler.terminate();
+
+      expect(mockChromium.terminate).toHaveBeenCalled();
+    });
+  });
+
+  describe("extractImageLinks", () => {
+    it.each([
+      {
+        images: [
+          {
+            src: "https://example.com/chapter-1/image-1",
+          },
+          {
+            src: "https://example.com/chapter-1/image-2",
+          },
+          {
+            src: "https://example.com/chapter-1/image-3",
+          },
+        ],
+        url: "https://example.com",
+      },
+    ])("should extract image links correctly", async ({ url, images }) => {
+      const imageLinks = images.map((image) => image.src);
+      mockPage.$$eval.mockResolvedValueOnce(imageLinks);
+
+      const result = await crawler.extractImageLinks(url);
+
+      expect(result).toStrictEqual(imageLinks);
+      expect(mockPage.close).toHaveBeenCalled();
     });
   });
 });
