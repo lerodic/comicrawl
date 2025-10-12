@@ -2,6 +2,7 @@ import Comicrawl from "../../core/Comicrawl";
 import Chromium from "../../core/crawl/Chromium";
 import CrawlerFactory from "../../core/factories/CrawlerFactory";
 import Logger from "../../core/io/Logger";
+import ProgressManager from "../../core/io/ProgressManager";
 import Prompt from "../../core/io/Prompt";
 import { Crawler, CrawlerFactoryFn } from "../../types";
 import CONFIG from "../app.config";
@@ -41,6 +42,11 @@ function setupContainer(): Container {
   });
 
   container.bind<Chromium>(TYPES.Chromium).to(Chromium).inSingletonScope();
+
+  container
+    .bind<ProgressManager>(TYPES.ProgressManager)
+    .to(ProgressManager)
+    .inSingletonScope();
 
   return container;
 }

@@ -25,3 +25,8 @@ export interface Chapter {
 }
 
 export type DownloadOption = (typeof DOWNLOAD_OPTIONS)[number];
+export interface ProgressInfo {
+  title?: string;
+  itemsTotal: number;
+  itemsCompleted: number;
+}
