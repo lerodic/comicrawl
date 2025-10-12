@@ -57,7 +57,7 @@ describe("Prompt", () => {
         const result = await prompt.getUrl();
 
         expect(mockLogger.error).toHaveBeenCalledWith(
-          "Please enter a valid URL. Below is a list of valid domains:\n"
+          "\nPlease enter a valid URL. Below is a list of valid domains:\n"
         );
         expect(mockLogger.info).toHaveBeenCalledTimes(
           mockedConfig.SUPPORTED_DOMAINS.length
@@ -132,7 +132,7 @@ describe("Prompt", () => {
         const result = await prompt.getChaptersStartingAt(chapters);
 
         expect(mockLogger.error).toHaveBeenCalledWith(
-          `Invalid chapter selection. Value must be >= 1 and <= ${chapters.length}.`
+          `\nInvalid chapter selection. Value must be >= 1 and <= ${chapters.length}.\n`
         );
         expect(getChaptersStartingAtSpy).toHaveBeenCalledTimes(2);
         expect(result).toStrictEqual(1);
