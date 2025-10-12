@@ -1,6 +1,6 @@
 import { boundClass } from "autobind-decorator";
 import { injectable } from "inversify";
-import puppeteer, { Browser, Page, PuppeteerLifeCycleEvent } from "puppeteer";
+import puppeteer, { Browser, PuppeteerLifeCycleEvent } from "puppeteer";
 import CONFIG from "../../config/app.config";
 import MissingChromiumInstance from "../errors/MissingChromiumInstance";
 
@@ -8,27 +8,22 @@ import MissingChromiumInstance from "../errors/MissingChromiumInstance";
 @injectable()
 class Chromium {
   private browser: Browser | undefined = undefined;
-  private page: Page | undefined = undefined;
 
   async openPage(
     url: string,
     waitUntil: PuppeteerLifeCycleEvent = "domcontentloaded"
   ) {
-    this.page = await this.setupPage();
+    const page = await this.setupPage();
 
-    await this.page.goto(url, {
+    await page.goto(url, {
       waitUntil,
       timeout: 0,
     });
 
-    return this.page;
+    return page;
   }
 
   private async setupPage() {
-    if (this.page) {
-      return this.page;
-    }
-
     const page = await this.openNewPage();
 
     page.setDefaultTimeout(0);
