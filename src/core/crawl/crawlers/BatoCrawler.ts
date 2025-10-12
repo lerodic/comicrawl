@@ -16,6 +16,8 @@ class BatoCrawler implements Crawler {
       return anchor.textContent ?? "Untitled";
     });
 
+    await page.close();
+
     return title;
   }
 
@@ -30,6 +32,8 @@ class BatoCrawler implements Crawler {
         }))
         .reverse();
     });
+
+    await page.close();
 
     return chapters;
   }
