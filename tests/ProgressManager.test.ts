@@ -1,108 +1,60 @@
 import "reflect-metadata";
 import ProgressManager from "../src/core/io/ProgressManager";
 import chalk from "chalk";
+import ProgressBar from "../src/core/io/ProgressBar";
 
 describe("ProgressManager", () => {
+  let progressManager: ProgressManager;
+  let mockPreparationProgressBar: jest.Mocked<ProgressBar>;
+
   beforeEach(() => {
     chalk.level = 0;
     jest.spyOn(process.stdout, "write").mockImplementation(jest.fn());
+
+    mockPreparationProgressBar = {
+      init: jest.fn(),
+      advance: jest.fn(),
+      complete: jest.fn(),
+    } as unknown as jest.Mocked<ProgressBar>;
+
+    progressManager = new ProgressManager(mockPreparationProgressBar);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("createChapterPreparationBar", () => {
+  describe("createPreparationBar", () => {
     it.each([
-      {
-        title: "Comic 1",
-        itemsTotal: 12,
-      },
-      {
-        title: "Random graphic novel",
-        itemsTotal: 89,
-      },
+      { title: "Bar 1", itemsTotal: 400 },
+      { title: "Bar 2", itemsTotal: 20 },
     ])(
-      "should create new chapter preparation bar for '$title' ($itemsTotal chapters)",
+      "should create '$title' progress bar with $itemsTotal items",
       ({ title, itemsTotal }) => {
-        const progress = new ProgressManager();
-        const logSpy = jest.spyOn(console, "log");
+        progressManager.createPreparationBar(title, itemsTotal);
 
-        progress.createChapterPreparationBar(title, itemsTotal);
-
-        expect(logSpy).toHaveBeenCalledWith(
-          `░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Preparing chapters (0/${itemsTotal})`
+        expect(mockPreparationProgressBar.init).toHaveBeenCalledWith(
+          title,
+          itemsTotal,
+          2
         );
       }
     );
   });
 
-  describe("advanceChapterPreparation", () => {
-    it.each([
-      {
-        title: "Comic 1",
-        itemsCompleted: 3,
-        expected: 4,
-        itemsTotal: 12,
-        output: `██████████░░░░░░░░░░░░░░░░░░░░ 33% | Preparing chapters (4/12)`,
-      },
-      {
-        title: "Random graphic novel",
-        itemsCompleted: 44,
-        expected: 45,
-        itemsTotal: 90,
-        output: `███████████████░░░░░░░░░░░░░░░ 50% | Preparing chapters (45/90)`,
-      },
-    ])(
-      "should increment progress for '$title' from $itemsCompleted => $expected",
-      ({ title, itemsCompleted, itemsTotal, output }) => {
-        const progress = new ProgressManager({
-          title,
-          itemsCompleted,
-          itemsTotal,
-        });
-        const logSpy = jest.spyOn(console, "log");
+  describe("advancePreparationBar", () => {
+    it("should advance preparation progress", () => {
+      progressManager.advancePreparation();
 
-        progress.advanceChapterPreparation();
-
-        expect(logSpy).toHaveBeenCalledWith(output);
-      }
-    );
+      expect(mockPreparationProgressBar.advance).toHaveBeenCalled();
+    });
   });
 
-  describe("completeChapterPreparation", () => {
-    it.each([
-      {
-        title: "Comic 1",
-        itemsCompleted: 11,
-        itemsTotal: 12,
-      },
-      {
-        title: "Comic 1",
-        itemsCompleted: 3,
-        itemsTotal: 12,
-      },
-      {
-        title: "Manga 1",
-        itemsCompleted: 192,
-        itemsTotal: 193,
-      },
-    ])(
-      "should complete chapter preparation for '$title' ($itemsTotal chapters)",
-      ({ title, itemsCompleted, itemsTotal }) => {
-        const progress = new ProgressManager({
-          title,
-          itemsCompleted,
-          itemsTotal,
-        });
-        const logSpy = jest.spyOn(console, "log");
+  describe("completePreparationBar", () => {
+    it("should complete preparation", () => {
+      progressManager.completePreparation();
 
-        progress.completeChapterPreparation();
-
-        expect(logSpy).toHaveBeenCalledWith(
-          `██████████████████████████████ 100% | Preparing chapters (${itemsTotal}/${itemsTotal})`
-        );
-      }
-    );
+      expect(mockPreparationProgressBar.complete).toHaveBeenCalled();
+    });
   });
 });
