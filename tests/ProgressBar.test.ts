@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import ProgressBar from "../src/core/io/ProgressBar";
+import ProgressBar from "../src/core/io/progress/ProgressBar";
 import chalk from "chalk";
 
 describe("ProgressBar", () => {
