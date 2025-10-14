@@ -1,4 +1,4 @@
-import ProgressBarFormatter from "../src/core/io/ProgressBarFormatter";
+import ProgressBarFormatter from "../src/core/io/progress/ProgressBarFormatter";
 import chalk from "chalk";
 
 describe("ProgressBarFormatter", () => {
@@ -20,7 +20,7 @@ describe("ProgressBarFormatter", () => {
           itemsCompleted: 0,
           itemsTotal: 20,
         },
-        expected: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% | First bar (0/20)",
+        expected: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | First bar (0/20)",
       },
       {
         width: 20,
@@ -30,7 +30,7 @@ describe("ProgressBarFormatter", () => {
           itemsCompleted: 10,
           itemsTotal: 30,
         },
-        expected: "███████░░░░░░░░░░░░░  33% | Second bar (10/30)",
+        expected: "███████░░░░░░░░░░░░░ 33% | Second bar (10/30)",
       },
       {
         width: 30,
@@ -40,7 +40,7 @@ describe("ProgressBarFormatter", () => {
           itemsCompleted: 28,
           itemsTotal: 40,
         },
-        expected: "█████████████████████░░░░░░░░░  70% | Third bar (28/40)",
+        expected: "█████████████████████░░░░░░░░░ 70% | Third bar (28/40)",
       },
       {
         width: 30,
@@ -52,7 +52,7 @@ describe("ProgressBarFormatter", () => {
           itemsTotal: 40,
         },
         expected:
-          "█████████████████████░░░░░░░░░  70% | This is a super long and ra... (28/40)",
+          "█████████████████████░░░░░░░░░ 70% | This is a super long and ra... (28/40)",
       },
     ])("should return $expected", ({ width, color, progress, expected }) => {
       const generateLabel = (_: any) => progress.title;
