@@ -7,6 +7,7 @@ const TYPES = {
   CrawlerFactoryFn: Symbol.for("CrawlerFactoryFn"),
   Chromium: Symbol.for("Chromium"),
   ProgressManager: Symbol.for("ProgressManager"),
+  PreparationProgressBar: Symbol.for("PreparationProgressBar"),
 };
 
 export default TYPES;

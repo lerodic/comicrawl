@@ -1,4 +1,6 @@
+import chalk from "chalk";
 import BatoCrawler from "../core/crawl/crawlers/BatoCrawler";
+import ProgressBar from "../core/io/ProgressBar";
 import { DomainMap, HostInfo, SupportedHost } from "../types";
 
 function createDomainMap(): DomainMap {
@@ -27,3 +29,10 @@ export const DOMAIN_MAP = createDomainMap();
 export const SUPPORTED_DOMAINS = extractSupportedDomains(DOMAIN_MAP);
 
 export const DOWNLOAD_OPTIONS = ["All", "Partial", "Selective"] as const;
+
+export const PREPARATION_PROGRESS_BAR = new ProgressBar(
+  chalk.greenBright,
+  1,
+  (_) => "Preparing chapters"
+);
+
