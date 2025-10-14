@@ -1,5 +1,5 @@
 import { boundClass } from "autobind-decorator";
-import { ProgressInfo } from "../../types";
+import { ProgressInfo } from "../../../types";
 import { Chalk } from "chalk";
 
 @boundClass

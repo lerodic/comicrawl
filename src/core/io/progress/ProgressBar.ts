@@ -1,6 +1,6 @@
 import { boundClass } from "autobind-decorator";
 import { injectable } from "inversify";
-import { ProgressInfo } from "../../types";
+import { ProgressInfo } from "../../../types";
 import { Chalk } from "chalk";
 import ProgressBarFormatter from "./ProgressBarFormatter";
 

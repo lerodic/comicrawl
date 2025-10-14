@@ -8,6 +8,8 @@ const TYPES = {
   Chromium: Symbol.for("Chromium"),
   ProgressManager: Symbol.for("ProgressManager"),
   PreparationProgressBar: Symbol.for("PreparationProgressBar"),
+  ComicProgressBar: Symbol.for("ComicProgressBar"),
+  ChapterProgressBar: Symbol.for("ChapterProgressBar"),
 };
 
 export default TYPES;
