@@ -201,7 +201,7 @@ class Comicrawl {
     );
   }
 
-  private async closeBrowser() {
+  async closeBrowser() {
     await this.crawlerFactory.getCrawler().terminate();
   }
 }
