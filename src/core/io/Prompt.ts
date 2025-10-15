@@ -104,6 +104,40 @@ class Prompt {
 
     return selectedChapters;
   }
+
+  async getChaptersEndpoint(
+    startingPoint: number,
+    chapters: Chapter[]
+  ): Promise<number> {
+    const { endPoint } = await inquirer.prompt([
+      {
+        type: "number",
+        name: "endPoint",
+        message: chalk.magentaBright.bold(
+          "Which chapter would you like to stop at?"
+        ),
+      },
+    ]);
+
+    return this.isValidEndPoint(endPoint, startingPoint, chapters.length)
+      ? endPoint
+      : this.handleEndPointRetrievalError(startingPoint, chapters);
+  }
+
+  private isValidEndPoint(input: number, min: number, max: number): boolean {
+    return input >= min && input <= max;
+  }
+
+  private async handleEndPointRetrievalError(
+    min: number,
+    chapters: Chapter[]
+  ): Promise<number> {
+    this.logger.error(
+      `\nInvalid chapter selection. Value must be >= ${min} and <= ${chapters.length}.\n`
+    );
+
+    return this.getChaptersEndpoint(min, chapters);
+  }
 }
 
 export default Prompt;
