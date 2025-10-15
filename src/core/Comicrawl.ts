@@ -38,7 +38,6 @@ class Comicrawl {
 
   private async prepareDownload(): Promise<DownloadInfo> {
     const url = await this.prompt.getUrl();
-
     const title = await this.crawlerFactory.getCrawler(url).extractTitle(url);
     const selectedChapters = await this.getChaptersToDownload(url, title);
     const preparedChapters = await this.prepareChaptersForDownload(
@@ -159,12 +158,7 @@ class Comicrawl {
           return download.image({
             url: imageLink,
             dest: path.join(
-              __dirname,
-              "..",
-              "..",
-              "comics",
-              this.sanitize(comicTitle),
-              this.sanitize(chapter.title),
+              this.getChapterPath(comicTitle, chapter.title),
               `${index + 1}.png`
             ),
           });
@@ -175,18 +169,21 @@ class Comicrawl {
     this.progress.completeChapter();
   }
 
-  private async createChapterFolder(comicTitle: string, chapterTitle: string) {
-    await fs.mkdir(
-      path.join(
-        __dirname,
-        "..",
-        "..",
-        "comics",
-        this.sanitize(comicTitle),
-        this.sanitize(chapterTitle)
-      ),
-      { recursive: true }
+  private getChapterPath(comicTitle: string, chapterTitle: string): string {
+    return path.join(
+      __dirname,
+      "..",
+      "..",
+      "comics",
+      this.sanitize(comicTitle),
+      this.sanitize(chapterTitle)
     );
+  }
+
+  private async createChapterFolder(comicTitle: string, chapterTitle: string) {
+    await fs.mkdir(this.getChapterPath(comicTitle, chapterTitle), {
+      recursive: true,
+    });
   }
 
   private sanitize(input: string): string {
