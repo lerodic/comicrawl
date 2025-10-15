@@ -2,6 +2,7 @@ import chalk from "chalk";
 import BatoCrawler from "../core/crawl/crawlers/BatoCrawler";
 import ProgressBar from "../core/io/progress/ProgressBar";
 import { DomainMap, HostInfo, SupportedHost } from "../types";
+import { getConcurrencyLevel } from "../utils/performance";
 
 function createDomainMap(): DomainMap {
   const domainMap = new Map<SupportedHost, HostInfo>();
@@ -48,3 +49,4 @@ export const CHAPTER_PROGRESS_BAR = new ProgressBar(
   (_) => "Downloading images"
 );
 
+export const CONCURRENCY_LEVEL = getConcurrencyLevel();
