@@ -38,7 +38,6 @@ class Comicrawl {
 
   private async prepareDownload(): Promise<DownloadInfo> {
     const url = await this.prompt.getUrl();
-
     const title = await this.crawlerFactory.getCrawler(url).extractTitle(url);
     const selectedChapters = await this.getChaptersToDownload(url, title);
     const preparedChapters = await this.prepareChaptersForDownload(
@@ -57,17 +56,13 @@ class Comicrawl {
       .getCrawler()
       .extractChapters(url);
 
-    if (this.isEmptyGraphicNovel(chapters)) {
+    if (chapters.length === 0) {
       throw new EmptyGraphicNovel(title);
     }
 
     this.logger.logChaptersFound(title, chapters.length);
 
     return this.getCorrectChapters(chapters);
-  }
-
-  private isEmptyGraphicNovel(chapters: Chapter[]): boolean {
-    return chapters.length === 0;
   }
 
   private async getCorrectChapters(chapters: Chapter[]): Promise<Chapter[]> {
@@ -103,29 +98,32 @@ class Comicrawl {
     title: string,
     chapters: Chapter[]
   ): Promise<DownloadableChapter[]> {
-    const limit = pLimit(CONCURRENCY_LEVEL);
     const crawler = this.crawlerFactory.getCrawler();
 
     this.progress.createPreparationBar(title, chapters.length);
 
-    const downloadableChapters = await Promise.all(
-      chapters.map((chapter) =>
-        limit(async () => {
-          try {
-            const imageLinks = await crawler.extractImageLinks(chapter.url);
+    const downloadableChapters = await this.limit(
+      chapters.map((chapter) => async () => {
+        try {
+          const imageLinks = await crawler.extractImageLinks(chapter.url);
 
-            return { ...chapter, imageLinks };
-          } finally {
-            this.progress.advancePreparation();
-          }
-        })
-      )
+          return { ...chapter, imageLinks };
+        } finally {
+          this.progress.advancePreparation();
+        }
+      })
     );
 
     this.progress.completePreparation();
     await this.closeBrowser();
 
     return downloadableChapters;
+  }
+
+  private limit<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
+    const limit = pLimit(CONCURRENCY_LEVEL);
+
+    return Promise.all(tasks.map((task) => limit(task)));
   }
 
   private async downloadChapters(
@@ -146,47 +144,42 @@ class Comicrawl {
     comicTitle: string,
     chapter: DownloadableChapter
   ) {
-    const limit = pLimit(CONCURRENCY_LEVEL);
     await this.createChapterFolder(comicTitle, chapter.title);
 
     this.progress.createChapterBar(chapter.title, chapter.imageLinks.length);
 
-    await Promise.all(
-      chapter.imageLinks.map((imageLink, index) =>
-        limit(async () => {
-          this.progress.advanceChapter();
+    await this.limit(
+      chapter.imageLinks.map((imageLink, index) => async () => {
+        this.progress.advanceChapter();
 
-          return download.image({
-            url: imageLink,
-            dest: path.join(
-              __dirname,
-              "..",
-              "..",
-              "comics",
-              this.sanitize(comicTitle),
-              this.sanitize(chapter.title),
-              `${index + 1}.png`
-            ),
-          });
-        })
-      )
+        return download.image({
+          url: imageLink,
+          dest: path.join(
+            this.getChapterPath(comicTitle, chapter.title),
+            `${index + 1}.png`
+          ),
+        });
+      })
     );
 
     this.progress.completeChapter();
   }
 
-  private async createChapterFolder(comicTitle: string, chapterTitle: string) {
-    await fs.mkdir(
-      path.join(
-        __dirname,
-        "..",
-        "..",
-        "comics",
-        this.sanitize(comicTitle),
-        this.sanitize(chapterTitle)
-      ),
-      { recursive: true }
+  private getChapterPath(comicTitle: string, chapterTitle: string): string {
+    return path.join(
+      __dirname,
+      "..",
+      "..",
+      "comics",
+      this.sanitize(comicTitle),
+      this.sanitize(chapterTitle)
     );
+  }
+
+  private async createChapterFolder(comicTitle: string, chapterTitle: string) {
+    await fs.mkdir(this.getChapterPath(comicTitle, chapterTitle), {
+      recursive: true,
+    });
   }
 
   private sanitize(input: string): string {
