@@ -3,6 +3,8 @@ import { inject, injectable } from "inversify";
 import { Chapter, Crawler } from "../../../types";
 import TYPES from "../../../config/inversify/inversify.types";
 import Chromium from "../Chromium";
+import axios from "axios";
+import { load } from "cheerio";
 
 @boundClass
 @injectable()
@@ -10,35 +12,37 @@ class BatoCrawler implements Crawler {
   constructor(@inject(TYPES.Chromium) private chromium: Chromium) {}
 
   async extractTitle(url: string): Promise<string> {
-    const page = await this.chromium.openPage(url);
+    const res = await axios.get(url);
+    const $ = load(res.data);
 
-    const title = await page.$eval("h3.item-title a", (anchor) => {
-      return anchor.textContent ?? "Untitled";
-    });
-
-    await page.close();
-
-    return title;
+    return $("h3.item-title a").text() ?? "Untitled";
   }
 
   async extractChapters(url: string): Promise<Chapter[]> {
-    const page = await this.chromium.openPage(url);
+    const domain = this.extractDomain(url);
+    const res = await axios.get(url);
+    const $ = load(res.data);
 
-    const chapters = await page.$$eval("a.chapt", (links) => {
-      return links
-        .map((link) => ({
-          url: (link as HTMLAnchorElement).href,
-          title: link.textContent as string,
-        }))
-        .reverse();
-    });
+    const chapters = $("a.chapt")
+      .map((_, link) => {
+        const relativeLink = $(link).attr("href") ?? "";
 
-    await page.close();
+        return {
+          url: `${domain}${relativeLink}`,
+          title: $(link).text().replace(/\s+/g, " ").trim() ?? "",
+        };
+      })
+      .get()
+      .reverse();
 
     return chapters;
   }
 
+  private extractDomain(url: string): string {
+    const { protocol, host } = new URL(url);
 
+    return `${protocol}//${host}`;
+  }
 
   async extractImageLinks(url: string): Promise<string[]> {
     const page = await this.chromium.openPage(url);
