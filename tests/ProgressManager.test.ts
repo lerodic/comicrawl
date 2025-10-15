@@ -1,108 +1,145 @@
 import "reflect-metadata";
-import ProgressManager from "../src/core/io/ProgressManager";
+import ProgressManager from "../src/core/io/progress/ProgressManager";
 import chalk from "chalk";
+import ProgressBar from "../src/core/io/progress/ProgressBar";
 
 describe("ProgressManager", () => {
+  let progressManager: ProgressManager;
+  let mockPreparationProgressBar: jest.Mocked<ProgressBar>;
+  let mockComicProgressBar: jest.Mocked<ProgressBar>;
+  let mockChapterProgressBar: jest.Mocked<ProgressBar>;
+
   beforeEach(() => {
     chalk.level = 0;
     jest.spyOn(process.stdout, "write").mockImplementation(jest.fn());
+
+    mockPreparationProgressBar = {
+      init: jest.fn(),
+      advance: jest.fn(),
+      complete: jest.fn(),
+    } as unknown as jest.Mocked<ProgressBar>;
+
+    mockComicProgressBar = {
+      init: jest.fn(),
+      advance: jest.fn(),
+      complete: jest.fn(),
+    } as unknown as jest.Mocked<ProgressBar>;
+
+    mockChapterProgressBar = {
+      init: jest.fn(),
+      advance: jest.fn(),
+      complete: jest.fn(),
+    } as unknown as jest.Mocked<ProgressBar>;
+
+    progressManager = new ProgressManager(
+      mockPreparationProgressBar,
+      mockComicProgressBar,
+      mockChapterProgressBar
+    );
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("createChapterPreparationBar", () => {
+  describe("createPreparationBar", () => {
     it.each([
-      {
-        title: "Comic 1",
-        itemsTotal: 12,
-      },
-      {
-        title: "Random graphic novel",
-        itemsTotal: 89,
-      },
+      { title: "Bar 1", itemsTotal: 400 },
+      { title: "Bar 2", itemsTotal: 20 },
     ])(
-      "should create new chapter preparation bar for '$title' ($itemsTotal chapters)",
+      "should create '$title' progress bar with $itemsTotal items",
       ({ title, itemsTotal }) => {
-        const progress = new ProgressManager();
-        const logSpy = jest.spyOn(console, "log");
+        progressManager.createPreparationBar(title, itemsTotal);
 
-        progress.createChapterPreparationBar(title, itemsTotal);
-
-        expect(logSpy).toHaveBeenCalledWith(
-          `░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Preparing chapters (0/${itemsTotal})`
+        expect(mockPreparationProgressBar.init).toHaveBeenCalledWith(
+          title,
+          itemsTotal,
+          2
         );
       }
     );
   });
 
-  describe("advanceChapterPreparation", () => {
+  describe("advancePreparationBar", () => {
+    it("should advance preparation progress", () => {
+      progressManager.advancePreparation();
+
+      expect(mockPreparationProgressBar.advance).toHaveBeenCalled();
+    });
+  });
+
+  describe("completePreparationBar", () => {
+    it("should complete preparation", () => {
+      progressManager.completePreparation();
+
+      expect(mockPreparationProgressBar.complete).toHaveBeenCalled();
+    });
+  });
+
+  describe("createComicBar", () => {
     it.each([
-      {
-        title: "Comic 1",
-        itemsCompleted: 3,
-        expected: 4,
-        itemsTotal: 12,
-        output: `██████████░░░░░░░░░░░░░░░░░░░░ 33% | Preparing chapters (4/12)`,
-      },
-      {
-        title: "Random graphic novel",
-        itemsCompleted: 44,
-        expected: 45,
-        itemsTotal: 90,
-        output: `███████████████░░░░░░░░░░░░░░░ 50% | Preparing chapters (45/90)`,
-      },
+      { title: "Bar 1", itemsTotal: 400 },
+      { title: "Bar 2", itemsTotal: 20 },
     ])(
-      "should increment progress for '$title' from $itemsCompleted => $expected",
-      ({ title, itemsCompleted, itemsTotal, output }) => {
-        const progress = new ProgressManager({
+      "should create '$title' progress bar with $itemsTotal items",
+      ({ title, itemsTotal }) => {
+        progressManager.createComicBar(title, itemsTotal);
+
+        expect(mockComicProgressBar.init).toHaveBeenCalledWith(
           title,
-          itemsCompleted,
           itemsTotal,
-        });
-        const logSpy = jest.spyOn(console, "log");
-
-        progress.advanceChapterPreparation();
-
-        expect(logSpy).toHaveBeenCalledWith(output);
+          1
+        );
       }
     );
   });
 
-  describe("completeChapterPreparation", () => {
+  describe("advanceComic", () => {
+    it("should advance comic progress", () => {
+      progressManager.advanceComic();
+
+      expect(mockComicProgressBar.advance).toHaveBeenCalled();
+    });
+  });
+
+  describe("completeComic", () => {
+    it("should complete comic", () => {
+      progressManager.completeComic();
+
+      expect(mockComicProgressBar.complete).toHaveBeenCalled();
+    });
+  });
+
+  describe("createChapterBar", () => {
     it.each([
-      {
-        title: "Comic 1",
-        itemsCompleted: 11,
-        itemsTotal: 12,
-      },
-      {
-        title: "Comic 1",
-        itemsCompleted: 3,
-        itemsTotal: 12,
-      },
-      {
-        title: "Manga 1",
-        itemsCompleted: 192,
-        itemsTotal: 193,
-      },
+      { title: "Bar 1", itemsTotal: 400 },
+      { title: "Bar 2", itemsTotal: 20 },
     ])(
-      "should complete chapter preparation for '$title' ($itemsTotal chapters)",
-      ({ title, itemsCompleted, itemsTotal }) => {
-        const progress = new ProgressManager({
+      "should create '$title' progress bar with $itemsTotal items",
+      ({ title, itemsTotal }) => {
+        progressManager.createChapterBar(title, itemsTotal);
+
+        expect(mockChapterProgressBar.init).toHaveBeenCalledWith(
           title,
-          itemsCompleted,
-          itemsTotal,
-        });
-        const logSpy = jest.spyOn(console, "log");
-
-        progress.completeChapterPreparation();
-
-        expect(logSpy).toHaveBeenCalledWith(
-          `██████████████████████████████ 100% | Preparing chapters (${itemsTotal}/${itemsTotal})`
+          itemsTotal
         );
       }
     );
+  });
+
+  describe("advanceChapter", () => {
+    it("should advance chapter progress", () => {
+      progressManager.advanceChapter();
+
+      expect(mockChapterProgressBar.advance).toHaveBeenCalled();
+    });
+  });
+
+  describe("completeChapter", () => {
+    it("should complete chapter", () => {
+      progressManager.completeChapter();
+
+      expect(mockChapterProgressBar.complete).toHaveBeenCalled();
+    });
   });
 });

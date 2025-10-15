@@ -2,10 +2,16 @@ import Comicrawl from "../../core/Comicrawl";
 import Chromium from "../../core/crawl/Chromium";
 import CrawlerFactory from "../../core/factories/CrawlerFactory";
 import Logger from "../../core/io/Logger";
-import ProgressManager from "../../core/io/ProgressManager";
+import ProgressBar from "../../core/io/progress/ProgressBar";
+import ProgressManager from "../../core/io/progress/ProgressManager";
 import Prompt from "../../core/io/Prompt";
 import { Crawler, CrawlerFactoryFn } from "../../types";
 import CONFIG from "../app.config";
+import {
+  CHAPTER_PROGRESS_BAR,
+  COMIC_PROGRESS_BAR,
+  PREPARATION_PROGRESS_BAR,
+} from "../constants";
 import TYPES from "./inversify.types";
 import { Container } from "inversify";
 
@@ -47,6 +53,18 @@ function setupContainer(): Container {
     .bind<ProgressManager>(TYPES.ProgressManager)
     .to(ProgressManager)
     .inSingletonScope();
+
+  container
+    .bind<ProgressBar>(TYPES.PreparationProgressBar)
+    .toConstantValue(PREPARATION_PROGRESS_BAR);
+
+  container
+    .bind<ProgressBar>(TYPES.ComicProgressBar)
+    .toConstantValue(COMIC_PROGRESS_BAR);
+
+  container
+    .bind<ProgressBar>(TYPES.ChapterProgressBar)
+    .toConstantValue(CHAPTER_PROGRESS_BAR);
 
   return container;
 }

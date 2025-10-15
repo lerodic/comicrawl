@@ -65,7 +65,9 @@ class Prompt {
       {
         type: "number",
         name: "startingPoint",
-        message: "Which chapter would you like to start at?",
+        message: chalk.magentaBright.bold(
+          "Which chapter would you like to start at?"
+        ),
       },
     ]);
 
@@ -93,7 +95,9 @@ class Prompt {
       {
         type: "checkbox",
         name: "selectedChapters",
-        message: "Select all chapters you wish to download:",
+        message: chalk.magentaBright.bold(
+          "Select all chapters you wish to download:"
+        ),
         choices: chapters.map((chapter) => chapter.title),
       },
     ]);

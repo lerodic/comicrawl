@@ -24,16 +24,6 @@ class Logger {
       )} chapters for '${chalk.blueBright.bold(title)}'.\n`
     );
   }
-
-  logDownloadStarted(title: string, chapterCounter: number) {
-    this.info(
-      `\n${chalk.blueBright.bold(
-        chapterCounter
-      )} chapters of '${chalk.blueBright.bold(
-        title
-      )}' prepared. Starting download.`
-    );
-  }
 }
 
 export default Logger;
