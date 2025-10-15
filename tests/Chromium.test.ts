@@ -3,8 +3,15 @@ import Chromium from "../src/core/crawl/Chromium";
 import MissingChromiumInstance from "../src/core/errors/MissingChromiumInstance";
 import CONFIG from "../src/config/app.config";
 import puppeteer, { Browser, Page } from "puppeteer";
+import { PuppeteerBlocker } from "@ghostery/adblocker-puppeteer";
 
 jest.mock("puppeteer");
+jest.mock("cross-fetch", () => jest.fn());
+jest.mock("@ghostery/adblocker-puppeteer", () => ({
+  PuppeteerBlocker: {
+    fromPrebuiltAdsAndTracking: jest.fn(),
+  },
+}));
 jest.mock("../src/config/app.config", () => ({
   __esModule: true,
   default: {
@@ -18,6 +25,7 @@ describe("Chromium", () => {
   let mockPuppeteer = puppeteer as jest.Mocked<typeof puppeteer>;
   let mockBrowser: jest.Mocked<Browser>;
   let mockPage: jest.Mocked<Page>;
+  let mockBlocker: jest.Mocked<PuppeteerBlocker>;
 
   beforeEach(() => {
     mockPage = {
@@ -31,7 +39,12 @@ describe("Chromium", () => {
     mockBrowser = {
       newPage: jest.fn().mockResolvedValue(mockPage),
       close: jest.fn(),
+      pages: jest.fn().mockResolvedValue([mockPage]),
     } as unknown as jest.Mocked<Browser>;
+
+    mockBlocker = {
+      enableBlockingInPage: jest.fn(),
+    } as unknown as jest.Mocked<PuppeteerBlocker>;
 
     chromium = new Chromium();
   });
@@ -50,11 +63,15 @@ describe("Chromium", () => {
     it("should set up new page correctly", async () => {
       CONFIG.EXECUTABLE_PATH = undefined;
       mockPuppeteer.launch.mockResolvedValue(mockBrowser);
+      (PuppeteerBlocker.fromPrebuiltAdsAndTracking as any).mockResolvedValue(
+        mockBlocker
+      );
 
       await chromium.openPage("https://somepage.com");
 
       expect(mockPage.setDefaultTimeout).toHaveBeenCalledWith(0);
       expect(mockPage.setDefaultNavigationTimeout).toHaveBeenCalledWith(0);
+      expect(mockBlocker.enableBlockingInPage).toHaveBeenCalled();
     });
 
     it.each(["https://example.com", "https://another-one.com"])(
@@ -62,6 +79,9 @@ describe("Chromium", () => {
       async (url) => {
         CONFIG.EXECUTABLE_PATH = undefined;
         mockPuppeteer.launch.mockResolvedValue(mockBrowser);
+        (PuppeteerBlocker.fromPrebuiltAdsAndTracking as any).mockResolvedValue(
+          mockBlocker
+        );
 
         const result = await chromium.openPage(url);
 
@@ -76,6 +96,9 @@ describe("Chromium", () => {
       "should navigate to %s using user-defined chromium instance",
       async (url) => {
         mockPuppeteer.launch.mockResolvedValue(mockBrowser);
+        (PuppeteerBlocker.fromPrebuiltAdsAndTracking as any).mockResolvedValue(
+          mockBlocker
+        );
 
         const result = await chromium.openPage(url);
 
@@ -116,6 +139,7 @@ describe("Chromium", () => {
 
       await chromium.terminate();
 
+      expect(mockPage.close).toHaveBeenCalled();
       expect(mockBrowser.close).toHaveBeenCalledTimes(1);
     });
   });

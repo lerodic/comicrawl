@@ -31,13 +31,12 @@ function setupContainer(): Container {
 
   container.bind<CrawlerFactoryFn>(TYPES.CrawlerFactoryFn).toFactory(() => {
     return (url: string) => {
-      if (container.isBound(TYPES.Crawler)) {
-        container.unbind(TYPES.Crawler);
-      }
-
       for (const [_, hostInfo] of CONFIG.DOMAIN_MAP) {
         if (hostInfo.domains.some((domain) => url.startsWith(domain))) {
-          container.bind<Crawler>(TYPES.Crawler).to(hostInfo.class);
+          container
+            .bind<Crawler>(TYPES.Crawler)
+            .to(hostInfo.class)
+            .inSingletonScope();
 
           break;
         }
