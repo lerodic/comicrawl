@@ -7,8 +7,12 @@ import { Chapter, DownloadableChapter, DownloadInfo } from "../types";
 import EmptyGraphicNovel from "./errors/EmptyGraphicNovel";
 import Logger from "./io/Logger";
 import pLimit from "p-limit";
-import ProgressManager from "./io/ProgressManager";
+import ProgressManager from "./io/progress/ProgressManager";
 import CrawlerInitializationFailed from "./errors/CrawlerInitializationFailed";
+import fs from "fs/promises";
+import path from "path";
+import download from "image-downloader";
+import { CONCURRENCY_LEVEL } from "../config/constants";
 
 @boundClass
 @injectable()
@@ -24,26 +28,25 @@ class Comicrawl {
     try {
       const { title, chapters } = await this.prepareDownload();
 
-      this.logger.logDownloadStarted(title, chapters.length);
+      await this.downloadChapters(title, chapters);
     } catch (err: any) {
       this.handleError(err);
+    } finally {
+      await this.closeBrowser();
     }
-
-    await this.shutdown();
   }
 
   private async prepareDownload(): Promise<DownloadInfo> {
     const url = await this.prompt.getUrl();
 
-    this.logger.logChapterRequest();
-
     const title = await this.crawlerFactory.getCrawler(url).extractTitle(url);
-    const chapters = await this.prepareChaptersForDownload(
+    const selectedChapters = await this.getChaptersToDownload(url, title);
+    const preparedChapters = await this.prepareChaptersForDownload(
       title,
-      await this.getChaptersToDownload(url, title)
+      selectedChapters
     );
 
-    return { title, chapters };
+    return { title, chapters: preparedChapters };
   }
 
   private async getChaptersToDownload(
@@ -100,26 +103,94 @@ class Comicrawl {
     title: string,
     chapters: Chapter[]
   ): Promise<DownloadableChapter[]> {
-    const limit = pLimit(10);
+    const limit = pLimit(CONCURRENCY_LEVEL);
+    const crawler = this.crawlerFactory.getCrawler();
 
-    this.progress.createChapterPreparationBar(title, chapters.length);
+    this.progress.createPreparationBar(title, chapters.length);
 
     const downloadableChapters = await Promise.all(
       chapters.map((chapter) =>
         limit(async () => {
-          const imageLinks = await this.crawlerFactory
-            .getCrawler()
-            .extractImageLinks(chapter.url);
-          this.progress.advanceChapterPreparation();
+          try {
+            const imageLinks = await crawler.extractImageLinks(chapter.url);
 
-          return { ...chapter, imageLinks };
+            return { ...chapter, imageLinks };
+          } finally {
+            this.progress.advancePreparation();
+          }
         })
       )
     );
 
-    this.progress.completeChapterPreparation();
+    this.progress.completePreparation();
+    await this.closeBrowser();
 
     return downloadableChapters;
+  }
+
+  private async downloadChapters(
+    comicTitle: string,
+    chapters: DownloadableChapter[]
+  ) {
+    this.progress.createComicBar(comicTitle, chapters.length);
+
+    for (const chapter of chapters) {
+      await this.downloadChapter(comicTitle, chapter);
+      this.progress.advanceComic();
+    }
+
+    this.progress.completeComic();
+  }
+
+  private async downloadChapter(
+    comicTitle: string,
+    chapter: DownloadableChapter
+  ) {
+    const limit = pLimit(CONCURRENCY_LEVEL);
+    await this.createChapterFolder(comicTitle, chapter.title);
+
+    this.progress.createChapterBar(chapter.title, chapter.imageLinks.length);
+
+    await Promise.all(
+      chapter.imageLinks.map((imageLink, index) =>
+        limit(async () => {
+          this.progress.advanceChapter();
+
+          return download.image({
+            url: imageLink,
+            dest: path.join(
+              __dirname,
+              "..",
+              "..",
+              "comics",
+              this.sanitize(comicTitle),
+              this.sanitize(chapter.title),
+              `${index + 1}.png`
+            ),
+          });
+        })
+      )
+    );
+
+    this.progress.completeChapter();
+  }
+
+  private async createChapterFolder(comicTitle: string, chapterTitle: string) {
+    await fs.mkdir(
+      path.join(
+        __dirname,
+        "..",
+        "..",
+        "comics",
+        this.sanitize(comicTitle),
+        this.sanitize(chapterTitle)
+      ),
+      { recursive: true }
+    );
+  }
+
+  private sanitize(input: string): string {
+    return input.replaceAll(" ", "-").toLowerCase();
   }
 
   private handleError(err: any) {
@@ -137,7 +208,7 @@ class Comicrawl {
     );
   }
 
-  private async shutdown() {
+  private async closeBrowser() {
     await this.crawlerFactory.getCrawler().terminate();
   }
 }
