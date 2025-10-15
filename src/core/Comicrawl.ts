@@ -56,17 +56,13 @@ class Comicrawl {
       .getCrawler()
       .extractChapters(url);
 
-    if (this.isEmptyGraphicNovel(chapters)) {
+    if (chapters.length === 0) {
       throw new EmptyGraphicNovel(title);
     }
 
     this.logger.logChaptersFound(title, chapters.length);
 
     return this.getCorrectChapters(chapters);
-  }
-
-  private isEmptyGraphicNovel(chapters: Chapter[]): boolean {
-    return chapters.length === 0;
   }
 
   private async getCorrectChapters(chapters: Chapter[]): Promise<Chapter[]> {
