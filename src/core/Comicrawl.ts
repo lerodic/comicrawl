@@ -75,6 +75,8 @@ class Comicrawl {
         return this.getChaptersStartingAt(chapters);
       case "Selective":
         return this.getChaptersBySelection(chapters);
+      case "Range":
+        return this.getChaptersInRange(chapters);
     }
   }
 
@@ -92,6 +94,13 @@ class Comicrawl {
     return chapters.filter((chapter) =>
       selectedChapters.includes(chapter.title)
     );
+  }
+
+  private async getChaptersInRange(chapters: Chapter[]): Promise<Chapter[]> {
+    const start = await this.prompt.getChaptersStartingAt(chapters);
+    const end = await this.prompt.getChaptersEndpoint(start, chapters);
+
+    return chapters.slice(start - 1, end);
   }
 
   private async prepareChaptersForDownload(
