@@ -23,7 +23,6 @@ describe("Comicrawl", () => {
   let mockLogger: jest.Mocked<Logger>;
   let mockProgressManager: jest.Mocked<ProgressManager>;
   let mkdirSpy = jest.spyOn(fs, "mkdir").mockImplementation();
-  let exitSpy = jest.spyOn(process, "exit").mockImplementation();
   let imageSpy = jest.spyOn(download, "image").mockImplementation();
 
   beforeEach(() => {
@@ -32,6 +31,7 @@ describe("Comicrawl", () => {
       getDownloadOption: jest.fn(),
       getChaptersStartingAt: jest.fn(),
       getChaptersFromList: jest.fn(),
+      getChaptersEndpoint: jest.fn(),
     } as unknown as jest.Mocked<Prompt>;
 
     mockCrawler = {
@@ -461,6 +461,159 @@ describe("Comicrawl", () => {
           mockCrawler.extractChapters.mockResolvedValue(chaptersWithoutLinks);
           mockPrompt.getDownloadOption.mockResolvedValue("Selective");
           mockPrompt.getChaptersFromList.mockResolvedValue(selected);
+          for (let i = 0; i < expected.length; i++) {
+            mockCrawler.extractImageLinks.mockResolvedValueOnce(
+              expected[i].imageLinks
+            );
+          }
+
+          await comicrawl.run();
+
+          expect(mockLogger.logChaptersFound).toHaveBeenCalledWith(
+            title,
+            chapters.length
+          );
+          expect(mockProgressManager.createPreparationBar).toHaveBeenCalledWith(
+            title,
+            expected.length
+          );
+          expected.forEach((chapter, index) => {
+            expect(mockCrawler.extractImageLinks).toHaveBeenNthCalledWith(
+              index + 1,
+              chapter.url
+            );
+          });
+          expect(mockProgressManager.advancePreparation).toHaveBeenCalledTimes(
+            expected.length
+          );
+          expect(mockProgressManager.completePreparation).toHaveBeenCalled();
+          expect(mockProgressManager.createComicBar).toHaveBeenCalledWith(
+            title,
+            expected.length
+          );
+          expect(mockProgressManager.advanceComic).toHaveBeenCalledTimes(
+            expected.length
+          );
+          expect(mkdirSpy).toHaveBeenCalledTimes(expected.length);
+          expected.forEach((chapter, index) => {
+            expect(
+              mockProgressManager.createChapterBar
+            ).toHaveBeenNthCalledWith(
+              index + 1,
+              chapter.title,
+              chapter.imageLinks.length
+            );
+          });
+          expect(mockProgressManager.advanceChapter).toHaveBeenCalledTimes(
+            numTotalImages
+          );
+          expect(imageSpy).toHaveBeenCalledTimes(numTotalImages);
+          expect(mockProgressManager.completeChapter).toHaveBeenCalled();
+          expect(mockProgressManager.completeComic).toHaveBeenCalled();
+          expect(mockCrawler.terminate).toHaveBeenCalledTimes(2);
+        }
+      );
+    });
+
+    describe("download chapters in range", () => {
+      it.each([
+        {
+          url: "example.com/comic-1",
+          title: "Comic 1",
+          chapters: [
+            {
+              title: "Chapter 1",
+              url: "example.com/chapter-1",
+              imageLinks: ["img1", "img2", "img3"],
+            },
+            {
+              title: "Chapter 2",
+              url: "example.com/chapter-2",
+              imageLinks: ["img1", "img2", "img3", "img4"],
+            },
+            {
+              title: "Chapter 3",
+              url: "example.com/chapter-3",
+              imageLinks: ["img1", "img2", "img3"],
+            },
+          ],
+          startingPoint: 2,
+          endPoint: 3,
+          expected: [
+            {
+              title: "Chapter 2",
+              url: "example.com/chapter-2",
+              imageLinks: ["img1", "img2", "img3", "img4"],
+            },
+            {
+              title: "Chapter 3",
+              url: "example.com/chapter-3",
+              imageLinks: ["img1", "img2", "img3"],
+            },
+          ],
+        },
+        {
+          url: "example.com/comic-2",
+          title: "Comic 2",
+          chapters: [
+            {
+              title: "Chapter 1",
+              url: "example.com/chapter-1",
+              imageLinks: ["img1", "img2", "img3"],
+            },
+            {
+              title: "Chapter 2",
+              url: "example.com/chapter-2",
+              imageLinks: ["img1", "img2", "img3", "img4"],
+            },
+            {
+              title: "Chapter 3",
+              url: "example.com/chapter-3",
+              imageLinks: ["img1", "img2", "img3"],
+            },
+            {
+              title: "Chapter 4",
+              url: "example.com/chapter-4",
+              imageLinks: ["img1", "img2", "img3", "img4", "img5"],
+            },
+            {
+              title: "Chapter 5",
+              url: "example.com/chapter-5",
+              imageLinks: ["img1", "img2", "img3"],
+            },
+          ],
+          startingPoint: 3,
+          endPoint: 4,
+          expected: [
+            {
+              title: "Chapter 3",
+              url: "example.com/chapter-3",
+              imageLinks: ["img1", "img2", "img3"],
+            },
+            {
+              title: "Chapter 4",
+              url: "example.com/chapter-4",
+              imageLinks: ["img1", "img2", "img3", "img4", "img5"],
+            },
+          ],
+        },
+      ])(
+        "should download all chapters from $startingPoint to $endPoint",
+        async ({ url, title, chapters, startingPoint, endPoint, expected }) => {
+          const numTotalImages = expected.reduce(
+            (total, chapter) => total + chapter.imageLinks.length,
+            0
+          );
+          const chaptersWithoutLinks = chapters.map((chapter) => ({
+            title: chapter.title,
+            url: chapter.url,
+          }));
+          mockPrompt.getUrl.mockResolvedValue(url);
+          mockCrawler.extractTitle.mockResolvedValue(title);
+          mockCrawler.extractChapters.mockResolvedValue(chaptersWithoutLinks);
+          mockPrompt.getDownloadOption.mockResolvedValue("Range");
+          mockPrompt.getChaptersStartingAt.mockResolvedValue(startingPoint);
+          mockPrompt.getChaptersEndpoint.mockResolvedValue(endPoint);
           for (let i = 0; i < expected.length; i++) {
             mockCrawler.extractImageLinks.mockResolvedValueOnce(
               expected[i].imageLinks
