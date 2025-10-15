@@ -139,4 +139,99 @@ describe("Prompt", () => {
       }
     );
   });
+
+  describe("getChaptersEndpoint", () => {
+    it.each([
+      {
+        startingPoint: 3,
+        endPoint: 5,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+          { title: "3", url: "3" },
+          { title: "4", url: "4" },
+          { title: "5", url: "5" },
+        ],
+      },
+      {
+        startingPoint: 4,
+        endPoint: 5,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+          { title: "3", url: "3" },
+          { title: "4", url: "4" },
+          { title: "5", url: "5" },
+        ],
+      },
+    ])(
+      "should return '$endPoint' if user enters a valid end point",
+      async ({ startingPoint, endPoint, chapters }) => {
+        mockInquirer.prompt.mockResolvedValueOnce({ endPoint });
+
+        const result = await prompt.getChaptersEndpoint(
+          startingPoint,
+          chapters
+        );
+
+        expect(result).toStrictEqual(endPoint);
+      }
+    );
+
+    it.each([
+      {
+        startingPoint: 3,
+        endPoint: 2,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+          { title: "3", url: "3" },
+          { title: "4", url: "4" },
+          { title: "5", url: "5" },
+        ],
+      },
+      {
+        startingPoint: 3,
+        endPoint: 2,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+          { title: "3", url: "3" },
+          { title: "4", url: "4" },
+          { title: "5", url: "5" },
+        ],
+      },
+      {
+        startingPoint: 3,
+        endPoint: 6,
+        chapters: [
+          { title: "1", url: "1" },
+          { title: "2", url: "2" },
+          { title: "3", url: "3" },
+          { title: "4", url: "4" },
+          { title: "5", url: "5" },
+        ],
+      },
+    ])(
+      "should log error if user enters invalid end point: '$endPoint'",
+      async ({ startingPoint, endPoint, chapters }) => {
+        mockInquirer.prompt.mockResolvedValueOnce({ endPoint });
+        const getChaptersEndpointSpy = jest
+          .spyOn(prompt, "getChaptersEndpoint")
+          .mockImplementationOnce(Prompt.prototype.getChaptersEndpoint)
+          .mockResolvedValueOnce(chapters.length);
+
+        const result = await prompt.getChaptersEndpoint(
+          startingPoint,
+          chapters
+        );
+
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          `\nInvalid chapter selection. Value must be >= ${startingPoint} and <= ${chapters.length}.\n`
+        );
+        expect(getChaptersEndpointSpy).toHaveBeenCalledTimes(2);
+        expect(result).toStrictEqual(chapters.length);
+      }
+    );
+  });
 });
