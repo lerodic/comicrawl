@@ -29,7 +29,12 @@ export const DOMAIN_MAP = createDomainMap();
 
 export const SUPPORTED_DOMAINS = extractSupportedDomains(DOMAIN_MAP);
 
-export const DOWNLOAD_OPTIONS = ["All", "Partial", "Selective"] as const;
+export const DOWNLOAD_OPTIONS = [
+  "All",
+  "Partial",
+  "Selective",
+  "Range",
+] as const;
 
 export const PREPARATION_PROGRESS_BAR = new ProgressBar(
   chalk.greenBright,
