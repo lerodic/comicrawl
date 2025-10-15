@@ -98,29 +98,32 @@ class Comicrawl {
     title: string,
     chapters: Chapter[]
   ): Promise<DownloadableChapter[]> {
-    const limit = pLimit(CONCURRENCY_LEVEL);
     const crawler = this.crawlerFactory.getCrawler();
 
     this.progress.createPreparationBar(title, chapters.length);
 
-    const downloadableChapters = await Promise.all(
-      chapters.map((chapter) =>
-        limit(async () => {
-          try {
-            const imageLinks = await crawler.extractImageLinks(chapter.url);
+    const downloadableChapters = await this.limit(
+      chapters.map((chapter) => async () => {
+        try {
+          const imageLinks = await crawler.extractImageLinks(chapter.url);
 
-            return { ...chapter, imageLinks };
-          } finally {
-            this.progress.advancePreparation();
-          }
-        })
-      )
+          return { ...chapter, imageLinks };
+        } finally {
+          this.progress.advancePreparation();
+        }
+      })
     );
 
     this.progress.completePreparation();
     await this.closeBrowser();
 
     return downloadableChapters;
+  }
+
+  private limit<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
+    const limit = pLimit(CONCURRENCY_LEVEL);
+
+    return Promise.all(tasks.map((task) => limit(task)));
   }
 
   private async downloadChapters(
@@ -141,25 +144,22 @@ class Comicrawl {
     comicTitle: string,
     chapter: DownloadableChapter
   ) {
-    const limit = pLimit(CONCURRENCY_LEVEL);
     await this.createChapterFolder(comicTitle, chapter.title);
 
     this.progress.createChapterBar(chapter.title, chapter.imageLinks.length);
 
-    await Promise.all(
-      chapter.imageLinks.map((imageLink, index) =>
-        limit(async () => {
-          this.progress.advanceChapter();
+    await this.limit(
+      chapter.imageLinks.map((imageLink, index) => async () => {
+        this.progress.advanceChapter();
 
-          return download.image({
-            url: imageLink,
-            dest: path.join(
-              this.getChapterPath(comicTitle, chapter.title),
-              `${index + 1}.png`
-            ),
-          });
-        })
-      )
+        return download.image({
+          url: imageLink,
+          dest: path.join(
+            this.getChapterPath(comicTitle, chapter.title),
+            `${index + 1}.png`
+          ),
+        });
+      })
     );
 
     this.progress.completeChapter();
