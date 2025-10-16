@@ -30,7 +30,7 @@ describe("ProgressBarFormatter", () => {
           itemsCompleted: 10,
           itemsTotal: 30,
         },
-        expected: "███████░░░░░░░░░░░░░ 33% | Second bar (10/30)",
+        expected: "██████░░░░░░░░░░░░░░ 33% | Second bar (10/30)",
       },
       {
         width: 30,
@@ -53,6 +53,37 @@ describe("ProgressBarFormatter", () => {
         },
         expected:
           "█████████████████████░░░░░░░░░ 70% | This is a super long and ra... (28/40)",
+      },
+      {
+        width: 30,
+        color: chalk.blue,
+        progress: {
+          title: "Short again",
+          itemsCompleted: 39,
+          itemsTotal: 40,
+        },
+        expected: "█████████████████████████████░ 97% | Short again (39/40)",
+      },
+      {
+        width: 30,
+        color: chalk.blue,
+        progress: {
+          title: "Completed",
+          itemsCompleted: 90,
+          itemsTotal: 90,
+        },
+        expected: "██████████████████████████████ 100% | Completed (90/90)",
+      },
+      {
+        width: 30,
+        color: chalk.blue,
+        progress: {
+          title: "Close, but nah",
+          itemsCompleted: 99,
+          itemsTotal: 100,
+        },
+        expected:
+          "█████████████████████████████░ 99% | Close, but nah (99/100)",
       },
     ])("should return $expected", ({ width, color, progress, expected }) => {
       const generateLabel = (_: any) => progress.title;
