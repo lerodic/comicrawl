@@ -219,7 +219,7 @@ describe("ProgressBar", () => {
           itemsTotal: 20,
           initial: 4,
           expected: 5,
-          formattedBar: "████████░░░░░░░░░░░░░░░░░░░░░░ 25% | Bar 1 (5/20)",
+          formattedBar: "███████░░░░░░░░░░░░░░░░░░░░░░░ 25% | Bar 1 (5/20)",
         },
         {
           color: chalk.greenBright,
@@ -267,7 +267,7 @@ describe("ProgressBar", () => {
           itemsTotal: 20,
           initial: 4,
           expected: 5,
-          formattedBar: "████████░░░░░░░░░░░░░░░░░░░░░░ 25% | Bar 1 (5/20)",
+          formattedBar: "███████░░░░░░░░░░░░░░░░░░░░░░░ 25% | Bar 1 (5/20)",
         },
         {
           color: chalk.greenBright,

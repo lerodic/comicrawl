@@ -28,7 +28,7 @@ class ProgressBarFormatter {
   }
 
   private getFormattedBar(percent: number): string {
-    const spotsFilled = Math.round(percent * this.width);
+    const spotsFilled = Math.floor(percent * this.width);
 
     return (
       this.color.bold("█".repeat(spotsFilled)) +
@@ -37,7 +37,7 @@ class ProgressBarFormatter {
   }
 
   private getFormattedProgression(percent: number): string {
-    return this.color.bold(`${Math.round(percent * 100)}%`);
+    return this.color.bold(`${Math.floor(percent * 100)}%`);
   }
 
   private getFormattedLabel(progress: ProgressInfo): string {
