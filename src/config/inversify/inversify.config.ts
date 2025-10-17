@@ -15,6 +15,7 @@ import {
 import TYPES from "./inversify.types";
 import { Container } from "inversify";
 import ErrorHandler from "../../core/error/ErrorHandler";
+import DownloadService from "../../core/download/DownloadService";
 import PreparationService from "../../core/download/PreparationService";
 
 function setupContainer(): Container {
@@ -66,6 +67,11 @@ function setupContainer(): Container {
   container
     .bind<ProgressBar>(TYPES.ChapterProgressBar)
     .toConstantValue(CHAPTER_PROGRESS_BAR);
+
+  container
+    .bind<DownloadService>(TYPES.DownloadService)
+    .to(DownloadService)
+    .inSingletonScope();
 
   container
     .bind<PreparationService>(TYPES.PreparationService)
