@@ -2,11 +2,11 @@ import "reflect-metadata";
 import Comicrawl from "../src/core/Comicrawl";
 import { Crawler } from "../src/types";
 import CrawlerFactory from "../src/core/factories/CrawlerFactory";
-import Logger from "../src/core/io/Logger";
 import CrawlerInitializationFailed from "../src/core/error/errors/CrawlerInitializationFailed";
 import PreparationService from "../src/core/download/PreparationService";
 import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
 import DownloadService from "../src/core/download/DownloadService";
+import ErrorHandler from "../src/core/error/ErrorHandler";
 
 jest.mock("p-limit", () => {
   return () => {
@@ -20,7 +20,7 @@ describe("Comicrawl", () => {
   let mockDownloadService: jest.Mocked<DownloadService>;
   let mockCrawler: jest.Mocked<Crawler>;
   let mockCrawlerFactory: jest.Mocked<CrawlerFactory>;
-  let mockLogger: jest.Mocked<Logger>;
+  let mockErrorHandler: jest.Mocked<ErrorHandler>;
 
   beforeEach(() => {
     mockPreparationService = {
@@ -38,20 +38,19 @@ describe("Comicrawl", () => {
       terminate: jest.fn(),
     } as unknown as jest.Mocked<Crawler>;
 
+    mockErrorHandler = {
+      handle: jest.fn(),
+    } as unknown as jest.Mocked<ErrorHandler>;
+
     mockCrawlerFactory = {
       getCrawler: jest.fn().mockReturnValue(mockCrawler),
     } as unknown as jest.Mocked<CrawlerFactory>;
-
-    mockLogger = {
-      error: jest.fn(),
-      logChaptersFound: jest.fn(),
-    } as unknown as jest.Mocked<Logger>;
 
     comicrawl = new Comicrawl(
       mockPreparationService,
       mockDownloadService,
       mockCrawlerFactory,
-      mockLogger
+      mockErrorHandler
     );
   });
 
@@ -93,41 +92,38 @@ describe("Comicrawl", () => {
     });
 
     it("should exit early if graphic novel does not contain any chapters", async () => {
+      const error = new EmptyGraphicNovel("Chapterless comic");
       mockPreparationService.start.mockImplementation(() => {
-        throw new EmptyGraphicNovel("Chapterless comic");
+        throw error;
       });
 
       await comicrawl.run();
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        `\n'Chapterless comic' is empty. Aborting.`
-      );
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
       expect(mockCrawler.terminate).toHaveBeenCalledTimes(1);
     });
 
     it("should exit early if crawler initialization fails", async () => {
+      const error = new CrawlerInitializationFailed();
       mockPreparationService.start.mockImplementationOnce(() => {
-        throw new CrawlerInitializationFailed();
+        throw error;
       });
 
       await comicrawl.run();
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        "\nFailed to initialize crawler. Please try again.\n"
-      );
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
       expect(mockCrawler.terminate).toHaveBeenCalled();
     });
 
     it("should terminate correctly on unexpected error", async () => {
+      const error = new Error();
       mockPreparationService.start.mockImplementationOnce(() => {
-        throw new Error();
+        throw error;
       });
 
       await comicrawl.run();
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        "\nSomething unexpected happened."
-      );
+      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
       expect(mockCrawler.terminate).toHaveBeenCalledTimes(1);
     });
   });
