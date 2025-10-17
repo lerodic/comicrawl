@@ -1,6 +1,6 @@
 class EmptyGraphicNovel extends Error {
   constructor(title: string) {
-    super(`${title} is empty. Aborting.`);
+    super(`'${title}' is empty. Aborting.`);
   }
 }
 
