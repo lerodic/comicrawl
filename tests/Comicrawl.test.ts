@@ -3,12 +3,10 @@ import Comicrawl from "../src/core/Comicrawl";
 import { Crawler } from "../src/types";
 import CrawlerFactory from "../src/core/factories/CrawlerFactory";
 import Logger from "../src/core/io/Logger";
-import ProgressManager from "../src/core/io/progress/ProgressManager";
 import CrawlerInitializationFailed from "../src/core/error/errors/CrawlerInitializationFailed";
-import fs from "fs/promises";
-import download from "image-downloader";
 import PreparationService from "../src/core/download/PreparationService";
 import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
+import DownloadService from "../src/core/download/DownloadService";
 
 jest.mock("p-limit", () => {
   return () => {
@@ -19,17 +17,19 @@ jest.mock("p-limit", () => {
 describe("Comicrawl", () => {
   let comicrawl: Comicrawl;
   let mockPreparationService: jest.Mocked<PreparationService>;
+  let mockDownloadService: jest.Mocked<DownloadService>;
   let mockCrawler: jest.Mocked<Crawler>;
   let mockCrawlerFactory: jest.Mocked<CrawlerFactory>;
   let mockLogger: jest.Mocked<Logger>;
-  let mockProgressManager: jest.Mocked<ProgressManager>;
-  let mkdirSpy = jest.spyOn(fs, "mkdir").mockImplementation();
-  let imageSpy = jest.spyOn(download, "image").mockImplementation();
 
   beforeEach(() => {
     mockPreparationService = {
       start: jest.fn(),
     } as unknown as jest.Mocked<PreparationService>;
+
+    mockDownloadService = {
+      start: jest.fn(),
+    } as unknown as jest.Mocked<DownloadService>;
 
     mockCrawler = {
       extractTitle: jest.fn(),
@@ -47,20 +47,11 @@ describe("Comicrawl", () => {
       logChaptersFound: jest.fn(),
     } as unknown as jest.Mocked<Logger>;
 
-    mockProgressManager = {
-      createComicBar: jest.fn(),
-      advanceComic: jest.fn(),
-      completeComic: jest.fn(),
-      createChapterBar: jest.fn(),
-      advanceChapter: jest.fn(),
-      completeChapter: jest.fn(),
-    } as unknown as jest.Mocked<ProgressManager>;
-
     comicrawl = new Comicrawl(
       mockPreparationService,
+      mockDownloadService,
       mockCrawlerFactory,
-      mockLogger,
-      mockProgressManager
+      mockLogger
     );
   });
 
@@ -91,305 +82,14 @@ describe("Comicrawl", () => {
             },
           ],
         },
-      ])(
-        "should correctly download whole comic",
-        async ({ title, chapters }) => {
-          const numTotalImages = chapters.reduce(
-            (total, chapter) => total + chapter.imageLinks.length,
-            0
-          );
-          mockPreparationService.start.mockResolvedValue({ title, chapters });
+      ])("should execute correctly", async ({ title, chapters }) => {
+        mockPreparationService.start.mockResolvedValue({ title, chapters });
 
-          await comicrawl.run();
+        await comicrawl.run();
 
-          expect(mockProgressManager.createComicBar).toHaveBeenCalledWith(
-            title,
-            chapters.length
-          );
-          expect(mockProgressManager.advanceComic).toHaveBeenCalledTimes(
-            chapters.length
-          );
-          expect(mkdirSpy).toHaveBeenCalledTimes(chapters.length);
-          chapters.forEach((chapter, index) => {
-            expect(
-              mockProgressManager.createChapterBar
-            ).toHaveBeenNthCalledWith(
-              index + 1,
-              chapter.title,
-              chapter.imageLinks.length
-            );
-          });
-          expect(mockProgressManager.advanceChapter).toHaveBeenCalledTimes(
-            numTotalImages
-          );
-          expect(imageSpy).toHaveBeenCalledTimes(numTotalImages);
-          expect(mockProgressManager.completeChapter).toHaveBeenCalled();
-          expect(mockProgressManager.completeComic).toHaveBeenCalled();
-          expect(mockCrawler.terminate).toHaveBeenCalledTimes(1);
-        }
-      );
-    });
-
-    describe("download chunk of comic", () => {
-      it.each([
-        {
-          title: "Comic 1",
-          startingAt: 1,
-          expected: [
-            {
-              title: "Chapter 1",
-              url: "example.com/chapter-1",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-            {
-              title: "Chapter 2",
-              url: "example.com/chapter-2",
-              imageLinks: ["img1", "img2", "img3", "img4"],
-            },
-            {
-              title: "Chapter 3",
-              url: "example.com/chapter-3",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-          ],
-        },
-        {
-          title: "Comic 2",
-          startingAt: 2,
-          expected: [
-            {
-              title: "Chapter 2",
-              url: "example.com/chapter-2",
-              imageLinks: ["img1", "img2", "img3", "img4"],
-            },
-            {
-              title: "Chapter 3",
-              url: "example.com/chapter-3",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-          ],
-        },
-        {
-          title: "Comic 3",
-          startingAt: 3,
-          expected: [
-            {
-              title: "Chapter 3",
-              url: "example.com/chapter-3",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-          ],
-        },
-      ])(
-        "should download chapters starting at $startingAt",
-        async ({ title, expected }) => {
-          const numTotalImages = expected.reduce(
-            (total, chapter) => total + chapter.imageLinks.length,
-            0
-          );
-          mockPreparationService.start.mockResolvedValue({
-            title,
-            chapters: expected,
-          });
-
-          await comicrawl.run();
-
-          expect(mockProgressManager.createComicBar).toHaveBeenCalledWith(
-            title,
-            expected.length
-          );
-          expect(mockProgressManager.advanceComic).toHaveBeenCalledTimes(
-            expected.length
-          );
-          expect(mkdirSpy).toHaveBeenCalledTimes(expected.length);
-          expected.forEach((chapter, index) => {
-            expect(
-              mockProgressManager.createChapterBar
-            ).toHaveBeenNthCalledWith(
-              index + 1,
-              chapter.title,
-              chapter.imageLinks.length
-            );
-          });
-          expect(mockProgressManager.advanceChapter).toHaveBeenCalledTimes(
-            numTotalImages
-          );
-          expect(imageSpy).toHaveBeenCalledTimes(numTotalImages);
-          expect(mockProgressManager.completeChapter).toHaveBeenCalled();
-          expect(mockProgressManager.completeComic).toHaveBeenCalled();
-          expect(mockCrawler.terminate).toHaveBeenCalledTimes(1);
-        }
-      );
-    });
-
-    describe("download chapters by selection", () => {
-      it.each([
-        {
-          title: "Comic 1",
-          selected: ["Chapter 1", "Chapter 2", "Chapter 3"],
-          expected: [
-            {
-              title: "Chapter 1",
-              url: "example.com/chapter-1",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-            {
-              title: "Chapter 2",
-              url: "example.com/chapter-2",
-              imageLinks: ["img1", "img2", "img3", "img4"],
-            },
-            {
-              title: "Chapter 3",
-              url: "example.com/chapter-3",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-          ],
-        },
-        {
-          title: "Comic 2",
-          selected: ["Chapter 2", "Chapter 3"],
-          expected: [
-            {
-              title: "Chapter 2",
-              url: "example.com/chapter-2",
-              imageLinks: ["img1", "img2", "img3", "img4"],
-            },
-            {
-              title: "Chapter 3",
-              url: "example.com/chapter-3",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-          ],
-        },
-        {
-          title: "Comic 3",
-          selected: ["Chapter 3"],
-          expected: [
-            {
-              title: "Chapter 3",
-              url: "example.com/chapter-3",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-          ],
-        },
-      ])(
-        "should correctly download selection of chapters",
-        async ({ title, expected }) => {
-          const numTotalImages = expected.reduce(
-            (total, chapter) => total + chapter.imageLinks.length,
-            0
-          );
-          mockPreparationService.start.mockResolvedValue({
-            title,
-            chapters: expected,
-          });
-
-          await comicrawl.run();
-
-          expect(mockProgressManager.createComicBar).toHaveBeenCalledWith(
-            title,
-            expected.length
-          );
-          expect(mockProgressManager.advanceComic).toHaveBeenCalledTimes(
-            expected.length
-          );
-          expect(mkdirSpy).toHaveBeenCalledTimes(expected.length);
-          expected.forEach((chapter, index) => {
-            expect(
-              mockProgressManager.createChapterBar
-            ).toHaveBeenNthCalledWith(
-              index + 1,
-              chapter.title,
-              chapter.imageLinks.length
-            );
-          });
-          expect(mockProgressManager.advanceChapter).toHaveBeenCalledTimes(
-            numTotalImages
-          );
-          expect(imageSpy).toHaveBeenCalledTimes(numTotalImages);
-          expect(mockProgressManager.completeChapter).toHaveBeenCalled();
-          expect(mockProgressManager.completeComic).toHaveBeenCalled();
-          expect(mockCrawler.terminate).toHaveBeenCalledTimes(1);
-        }
-      );
-    });
-
-    describe("download chapters in range", () => {
-      it.each([
-        {
-          title: "Comic 1",
-          startingPoint: 2,
-          endPoint: 3,
-          expected: [
-            {
-              title: "Chapter 2",
-              url: "example.com/chapter-2",
-              imageLinks: ["img1", "img2", "img3", "img4"],
-            },
-            {
-              title: "Chapter 3",
-              url: "example.com/chapter-3",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-          ],
-        },
-        {
-          title: "Comic 2",
-          startingPoint: 3,
-          endPoint: 4,
-          expected: [
-            {
-              title: "Chapter 3",
-              url: "example.com/chapter-3",
-              imageLinks: ["img1", "img2", "img3"],
-            },
-            {
-              title: "Chapter 4",
-              url: "example.com/chapter-4",
-              imageLinks: ["img1", "img2", "img3", "img4", "img5"],
-            },
-          ],
-        },
-      ])(
-        "should download all chapters from $startingPoint to $endPoint",
-        async ({ title, expected }) => {
-          const numTotalImages = expected.reduce(
-            (total, chapter) => total + chapter.imageLinks.length,
-            0
-          );
-          mockPreparationService.start.mockResolvedValue({
-            title,
-            chapters: expected,
-          });
-
-          await comicrawl.run();
-
-          expect(mockProgressManager.createComicBar).toHaveBeenCalledWith(
-            title,
-            expected.length
-          );
-          expect(mockProgressManager.advanceComic).toHaveBeenCalledTimes(
-            expected.length
-          );
-          expect(mkdirSpy).toHaveBeenCalledTimes(expected.length);
-          expected.forEach((chapter, index) => {
-            expect(
-              mockProgressManager.createChapterBar
-            ).toHaveBeenNthCalledWith(
-              index + 1,
-              chapter.title,
-              chapter.imageLinks.length
-            );
-          });
-          expect(mockProgressManager.advanceChapter).toHaveBeenCalledTimes(
-            numTotalImages
-          );
-          expect(imageSpy).toHaveBeenCalledTimes(numTotalImages);
-          expect(mockProgressManager.completeChapter).toHaveBeenCalled();
-          expect(mockProgressManager.completeComic).toHaveBeenCalled();
-          expect(mockCrawler.terminate).toHaveBeenCalledTimes(1);
-        }
-      );
+        expect(mockDownloadService.start).toHaveBeenCalledWith(title, chapters);
+        expect(mockCrawler.terminate).toHaveBeenCalledTimes(1);
+      });
     });
 
     it("should exit early if graphic novel does not contain any chapters", async () => {
