@@ -1,10 +1,8 @@
 import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
 import TYPES from "../config/inversify/inversify.types";
-import Prompt from "./io/Prompt";
 import CrawlerFactory from "./factories/CrawlerFactory";
 import { Chapter, DownloadableChapter, DownloadInfo } from "../types";
-import EmptyGraphicNovel from "./errors/EmptyGraphicNovel";
 import Logger from "./io/Logger";
 import pLimit from "p-limit";
 import ProgressManager from "./io/progress/ProgressManager";
@@ -14,21 +12,22 @@ import path from "path";
 import download from "image-downloader";
 import { CONCURRENCY_LEVEL } from "../config/constants";
 import ErrorHandler from "./error/ErrorHandler";
+import PreparationService from "./download/PreparationService";
 
 @boundClass
 @injectable()
 class Comicrawl {
   constructor(
-    @inject(TYPES.Prompt) private prompt: Prompt,
     @inject(TYPES.CrawlerFactory) private crawlerFactory: CrawlerFactory,
     @inject(TYPES.Logger) private logger: Logger,
     @inject(TYPES.ProgressManager) private progress: ProgressManager
+    @inject(TYPES.PreparationService) private preparation: PreparationService,
     @inject(TYPES.ErrorHandler) private errorHandler: ErrorHandler,
   ) {}
 
   async run() {
     try {
-      const { title, chapters } = await this.prepareDownload();
+      const { title, chapters } = await this.preparation.start();
 
       await this.downloadChapters(title, chapters);
     } catch (err: any) {
@@ -37,100 +36,6 @@ class Comicrawl {
       await this.closeBrowser();
     }
   }
-
-  private async prepareDownload(): Promise<DownloadInfo> {
-    const url = await this.prompt.getUrl();
-    const title = await this.crawlerFactory.getCrawler(url).extractTitle(url);
-    const selectedChapters = await this.getChaptersToDownload(url, title);
-    const preparedChapters = await this.prepareChaptersForDownload(
-      title,
-      selectedChapters
-    );
-
-    return { title, chapters: preparedChapters };
-  }
-
-  private async getChaptersToDownload(
-    url: string,
-    title: string
-  ): Promise<Chapter[]> {
-    const chapters = await this.crawlerFactory
-      .getCrawler()
-      .extractChapters(url);
-
-    if (chapters.length === 0) {
-      throw new EmptyGraphicNovel(title);
-    }
-
-    this.logger.logChaptersFound(title, chapters.length);
-
-    return this.getCorrectChapters(chapters);
-  }
-
-  private async getCorrectChapters(chapters: Chapter[]): Promise<Chapter[]> {
-    const downloadOption = await this.prompt.getDownloadOption();
-
-    switch (downloadOption) {
-      case "All":
-        return chapters;
-      case "Partial":
-        return this.getChaptersStartingAt(chapters);
-      case "Selective":
-        return this.getChaptersBySelection(chapters);
-      case "Range":
-        return this.getChaptersInRange(chapters);
-    }
-  }
-
-  private async getChaptersStartingAt(chapters: Chapter[]): Promise<Chapter[]> {
-    const startingPoint = await this.prompt.getChaptersStartingAt(chapters);
-
-    return chapters.slice(startingPoint - 1);
-  }
-
-  private async getChaptersBySelection(
-    chapters: Chapter[]
-  ): Promise<Chapter[]> {
-    const selectedChapters = await this.prompt.getChaptersFromList(chapters);
-
-    return chapters.filter((chapter) =>
-      selectedChapters.includes(chapter.title)
-    );
-  }
-
-  private async getChaptersInRange(chapters: Chapter[]): Promise<Chapter[]> {
-    const start = await this.prompt.getChaptersStartingAt(chapters);
-    const end = await this.prompt.getChaptersEndpoint(start, chapters);
-
-    return chapters.slice(start - 1, end);
-  }
-
-  private async prepareChaptersForDownload(
-    title: string,
-    chapters: Chapter[]
-  ): Promise<DownloadableChapter[]> {
-    const crawler = this.crawlerFactory.getCrawler();
-
-    this.progress.createPreparationBar(title, chapters.length);
-
-    const downloadableChapters = await this.limit(
-      chapters.map((chapter) => async () => {
-        try {
-          const imageLinks = await crawler.extractImageLinks(chapter.url);
-
-          return { ...chapter, imageLinks };
-        } finally {
-          this.progress.advancePreparation();
-        }
-      })
-    );
-
-    this.progress.completePreparation();
-    await this.closeBrowser();
-
-    return downloadableChapters;
-  }
-
   private limit<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
     const limit = pLimit(CONCURRENCY_LEVEL);
 
