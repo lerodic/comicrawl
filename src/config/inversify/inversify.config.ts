@@ -14,6 +14,7 @@ import {
 } from "../constants";
 import TYPES from "./inversify.types";
 import { Container } from "inversify";
+import ErrorHandler from "../../core/error/ErrorHandler";
 
 function setupContainer(): Container {
   const container = new Container();
@@ -64,6 +65,11 @@ function setupContainer(): Container {
   container
     .bind<ProgressBar>(TYPES.ChapterProgressBar)
     .toConstantValue(CHAPTER_PROGRESS_BAR);
+
+  container
+    .bind<ErrorHandler>(TYPES.ErrorHandler)
+    .to(ErrorHandler)
+    .inSingletonScope();
 
   return container;
 }

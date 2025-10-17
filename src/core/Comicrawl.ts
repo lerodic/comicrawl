@@ -13,6 +13,7 @@ import fs from "fs/promises";
 import path from "path";
 import download from "image-downloader";
 import { CONCURRENCY_LEVEL } from "../config/constants";
+import ErrorHandler from "./error/ErrorHandler";
 
 @boundClass
 @injectable()
@@ -22,6 +23,7 @@ class Comicrawl {
     @inject(TYPES.CrawlerFactory) private crawlerFactory: CrawlerFactory,
     @inject(TYPES.Logger) private logger: Logger,
     @inject(TYPES.ProgressManager) private progress: ProgressManager
+    @inject(TYPES.ErrorHandler) private errorHandler: ErrorHandler,
   ) {}
 
   async run() {
@@ -30,7 +32,7 @@ class Comicrawl {
 
       await this.downloadChapters(title, chapters);
     } catch (err: any) {
-      this.handleError(err);
+      this.errorHandler.handle(err);
     } finally {
       await this.closeBrowser();
     }
