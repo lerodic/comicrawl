@@ -1,4 +1,5 @@
 import os from "os";
+import pLimit from "p-limit";
 
 const memoryConsumerMapping = {
   8: 1,
@@ -8,7 +9,7 @@ const memoryConsumerMapping = {
   128: 15,
 };
 
-export function getConcurrencyLevel(): number {
+function getConcurrencyLevel(): number {
   const totalMemory = os.totalmem();
   const totalMemoryInGb = totalMemory / Math.pow(1024, 3);
 
@@ -21,4 +22,10 @@ export function getConcurrencyLevel(): number {
   }
 
   return 20;
+}
+
+export async function limit<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
+  const limit = pLimit(getConcurrencyLevel());
+
+  return Promise.all(tasks.map((task) => limit(task)));
 }

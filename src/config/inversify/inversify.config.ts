@@ -14,6 +14,11 @@ import {
 } from "../constants";
 import TYPES from "./inversify.types";
 import { Container } from "inversify";
+import ErrorHandler from "../../core/error/ErrorHandler";
+import DownloadService from "../../core/download/DownloadService";
+import PreparationService from "../../core/download/PreparationService";
+import emitter from "../../core/events/emitter";
+import { EventEmitter } from "../../types";
 
 function setupContainer(): Container {
   const container = new Container();
@@ -64,6 +69,23 @@ function setupContainer(): Container {
   container
     .bind<ProgressBar>(TYPES.ChapterProgressBar)
     .toConstantValue(CHAPTER_PROGRESS_BAR);
+
+  container
+    .bind<DownloadService>(TYPES.DownloadService)
+    .to(DownloadService)
+    .inSingletonScope();
+
+  container
+    .bind<PreparationService>(TYPES.PreparationService)
+    .to(PreparationService)
+    .inSingletonScope();
+
+  container
+    .bind<ErrorHandler>(TYPES.ErrorHandler)
+    .to(ErrorHandler)
+    .inSingletonScope();
+
+  container.bind<EventEmitter>(TYPES.EventEmitter).toConstantValue(emitter);
 
   return container;
 }

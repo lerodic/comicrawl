@@ -2,7 +2,7 @@ import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
 import TYPES from "../../config/inversify/inversify.types";
 import { Crawler, CrawlerFactoryFn } from "../../types";
-import CrawlerInitializationFailed from "../errors/CrawlerInitializationFailed";
+import CrawlerInitializationFailed from "../error/errors/CrawlerInitializationFailed";
 
 @boundClass
 @injectable()

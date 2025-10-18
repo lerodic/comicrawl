@@ -10,6 +10,10 @@ const TYPES = {
   PreparationProgressBar: Symbol.for("PreparationProgressBar"),
   ComicProgressBar: Symbol.for("ComicProgressBar"),
   ChapterProgressBar: Symbol.for("ChapterProgressBar"),
+  DownloadService: Symbol.for("DownloadService"),
+  PreparationService: Symbol.for("PreparationService"),
+  EventEmitter: Symbol.for("EventEmitter"),
+  ErrorHandler: Symbol.for("ErrorHandler"),
 };
 
 export default TYPES;

@@ -47,7 +47,12 @@ class Prompt {
     return this.getUrl();
   }
 
-  async getDownloadOption(): Promise<DownloadOption> {
+  async getDownloadOption(
+    title: string,
+    itemsTotal: number
+  ): Promise<DownloadOption> {
+    this.logger.logChaptersFound(title, itemsTotal);
+
     const { downloadOption } = await inquirer.prompt([
       {
         type: "list",
