@@ -1,5 +1,6 @@
 import { Newable } from "inversify";
 import { DOWNLOAD_OPTIONS } from "./config/constants";
+import emitter from "./core/events/emitter";
 
 export type SupportedHost = "Bato";
 
@@ -40,3 +41,10 @@ export interface ProgressInfo {
   itemsTotal: number;
   itemsCompleted: number;
 }
+
+export type EventEmitter = typeof emitter;
+
+export type ComicrawlEvents = {
+  applicationTerminated: void;
+};
+

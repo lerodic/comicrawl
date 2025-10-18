@@ -12,6 +12,7 @@ const TYPES = {
   ChapterProgressBar: Symbol.for("ChapterProgressBar"),
   DownloadService: Symbol.for("DownloadService"),
   PreparationService: Symbol.for("PreparationService"),
+  EventEmitter: Symbol.for("EventEmitter"),
   ErrorHandler: Symbol.for("ErrorHandler"),
 };
 
