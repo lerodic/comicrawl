@@ -1,11 +1,6 @@
 import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
-import {
-  Chapter,
-  Crawler,
-  DownloadableChapter,
-  DownloadInfo,
-} from "../../types";
+import { Chapter, DownloadableChapter, DownloadInfo } from "../../types";
 import EmptyGraphicNovel from "../error/errors/EmptyGraphicNovel";
 import { limit } from "../../utils/performance";
 import TYPES from "../../config/inversify/inversify.types";
@@ -16,8 +11,6 @@ import ProgressManager from "../io/progress/ProgressManager";
 @boundClass
 @injectable()
 class PreparationService {
-  private crawler: Crawler | undefined = undefined;
-
   constructor(
     @inject(TYPES.Prompt) private prompt: Prompt,
     @inject(TYPES.CrawlerFactory) private crawlerFactory: CrawlerFactory,
@@ -26,15 +19,14 @@ class PreparationService {
 
   async start(): Promise<DownloadInfo> {
     const url = await this.prompt.getUrl();
-    this.crawler = this.crawlerFactory.getCrawler(url);
-    const title = await this.crawler.extractTitle(url);
+    const title = await this.crawlerFactory.getCrawler(url).extractTitle(url);
     const selectedChapters = await this.getChaptersToDownload(url, title);
     const preparedChapters = await this.prepareChaptersForDownload(
       title,
       selectedChapters
     );
 
-    await this.crawler.terminate();
+    await this.crawlerFactory.getCrawler().terminate();
 
     return { title, chapters: preparedChapters };
   }
@@ -43,7 +35,9 @@ class PreparationService {
     url: string,
     title: string
   ): Promise<Chapter[]> {
-    const chapters = await this.crawler!.extractChapters(url);
+    const chapters = await this.crawlerFactory
+      .getCrawler(url)
+      .extractChapters(url);
 
     if (chapters.length === 0) {
       throw new EmptyGraphicNovel(title);
@@ -101,11 +95,12 @@ class PreparationService {
     chapters: Chapter[]
   ): Promise<DownloadableChapter[]> {
     this.progress.createPreparationBar(title, chapters.length);
+    const crawler = this.crawlerFactory.getCrawler();
 
     const downloadableChapters = await limit(
       chapters.map((chapter) => async () => {
         try {
-          const imageLinks = await this.crawler!.extractImageLinks(chapter.url);
+          const imageLinks = await crawler.extractImageLinks(chapter.url);
 
           return { ...chapter, imageLinks };
         } finally {
