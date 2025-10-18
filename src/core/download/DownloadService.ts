@@ -59,6 +59,7 @@ class DownloadService {
       __dirname,
       "..",
       "..",
+      "..",
       "comics",
       this.sanitize(comicTitle),
       this.sanitize(chapterTitle)
