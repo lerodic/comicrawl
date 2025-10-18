@@ -29,6 +29,7 @@
     "image-downloader": "^4.3.0",
     "inquirer": "^12.9.6",
     "inversify": "^7.10.2",
+    "mitt": "^3.0.1",
     "p-limit": "^7.1.1",
     "puppeteer": "^24.23.0",
     "reflect-metadata": "^0.2.2",
