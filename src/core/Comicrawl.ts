@@ -17,6 +17,8 @@ class Comicrawl {
   ) {}
 
   async run() {
+    this.init();
+
     try {
       const { title, chapters } = await this.preparation.start();
 
@@ -24,8 +26,18 @@ class Comicrawl {
     } catch (err: any) {
       this.errorHandler.handle(err);
     } finally {
-      this.emitter.emit("applicationTerminated");
+      this.performGracefulShutdown();
     }
+  }
+
+  private init() {
+    process.on("SIGINT", () => {
+      this.performGracefulShutdown();
+    });
+  }
+
+  private performGracefulShutdown() {
+    this.emitter.emit("applicationTerminated");
   }
 }
 
