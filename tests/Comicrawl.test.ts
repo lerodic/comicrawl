@@ -124,5 +124,17 @@ describe("Comicrawl", () => {
         "applicationTerminated"
       );
     });
+
+    it("should correctly listen for SIGINT event and act accordingly", async () => {
+      mockPreparationService.start.mockImplementation((): any => {
+        process.emit("SIGINT");
+      });
+
+      await comicrawl.run();
+
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        "applicationTerminated"
+      );
+    });
   });
 });
