@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import CrawlerFactory from "../src/core/factories/CrawlerFactory";
 import type { CrawlerFactoryFn, Crawler } from "../src/types";
-import CrawlerInitializationFailed from "../src/core/errors/CrawlerInitializationFailed";
+import CrawlerInitializationFailed from "../src/core/error/errors/CrawlerInitializationFailed";
 
 describe("CrawlerFactory", () => {
   let crawlerFactory: CrawlerFactory;
