@@ -23,6 +23,7 @@ describe("Prompt", () => {
     mockLogger = {
       error: jest.fn(),
       info: jest.fn(),
+      logChaptersFound: jest.fn(),
     } as unknown as jest.Mocked<Logger>;
 
     prompt = new Prompt(mockLogger);
@@ -64,6 +65,28 @@ describe("Prompt", () => {
         );
         expect(result).toStrictEqual("mocked-second-call");
         expect(getUrlSpy).toHaveBeenCalledTimes(2);
+      }
+    );
+  });
+
+  describe("getDownloadOption", () => {
+    it.each([
+      { title: "Comic 1", itemsTotal: 15, downloadOption: "All" },
+      { title: "Comic 2", itemsTotal: 30, downloadOption: "Partial" },
+      { title: "Comic 3", itemsTotal: 120, downloadOption: "Selective" },
+      { title: "Comic 4", itemsTotal: 19, downloadOption: "Range" },
+    ])(
+      "should return '$downloadOption'",
+      async ({ title, itemsTotal, downloadOption }) => {
+        mockInquirer.prompt.mockResolvedValue({ downloadOption });
+
+        const result = await prompt.getDownloadOption(title, itemsTotal);
+
+        expect(result).toStrictEqual(downloadOption);
+        expect(mockLogger.logChaptersFound).toHaveBeenCalledWith(
+          title,
+          itemsTotal
+        );
       }
     );
   });
