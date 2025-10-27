@@ -32,6 +32,7 @@ export type DownloadableChapter = Chapter & {
 export type DownloadOption = (typeof DOWNLOAD_OPTIONS)[number];
 
 export interface DownloadInfo {
+  url: string;
   title: string;
   chapters: DownloadableChapter[];
 }
