@@ -21,7 +21,7 @@ class DownloadService {
     this.progress.createComicBar(comicTitle, chapters.length);
 
     for (const chapter of chapters) {
-      await this.downloadChapter(comicTitle, chapter);
+      await this.downloadChapter(chapters, comicTitle, chapter);
       this.progress.advanceComic();
     }
 
@@ -29,6 +29,7 @@ class DownloadService {
   }
 
   private async downloadChapter(
+    chapters: DownloadableChapter[],
     comicTitle: string,
     chapter: DownloadableChapter
   ) {
@@ -43,7 +44,7 @@ class DownloadService {
             url,
             dest: path.join(
               this.getChapterPath(comicTitle, chapter.title),
-              `${index + 1}.png`
+              `${this.getImageIndex(chapters, chapter, index + 1)}.png`
             ),
             timeout: 0,
           });
@@ -71,6 +72,21 @@ class DownloadService {
       this.sanitize(comicTitle),
       this.sanitize(chapterTitle)
     );
+  }
+
+  private getImageIndex(
+    chapters: DownloadableChapter[],
+    currentChapter: DownloadableChapter,
+    imageIndex: number
+  ): number {
+    const previousChapters = chapters.slice(
+      0,
+      chapters.indexOf(currentChapter)
+    );
+
+    return previousChapters.reduce((prev, current) => {
+      return prev + current.imageLinks.length;
+    }, imageIndex);
   }
 
   private async createChapterFolder(comicTitle: string, chapterTitle: string) {
