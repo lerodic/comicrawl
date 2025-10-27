@@ -4,6 +4,7 @@ import path from "path";
 import ProgressManager from "../src/core/io/progress/ProgressManager";
 import { limit } from "../src/utils/performance";
 import download from "image-downloader";
+import LogFile from "../src/core/io/LogFile";
 
 jest.mock("fs/promises");
 jest.mock("image-downloader");
@@ -14,6 +15,7 @@ jest.mock("../src/utils/performance", () => ({
 describe("DownloadService", () => {
   let downloadService: DownloadService;
   let mockProgressManager: jest.Mocked<ProgressManager>;
+  let mockLogFile: jest.Mocked<LogFile>;
   let mkdirSpy = jest.spyOn(fs, "mkdir");
   let joinSpy = jest.spyOn(path, "join");
   let imageSpy = jest.spyOn(download, "image");
@@ -32,7 +34,11 @@ describe("DownloadService", () => {
       completeChapter: jest.fn(),
     } as unknown as jest.Mocked<ProgressManager>;
 
-    downloadService = new DownloadService(mockProgressManager);
+    mockLogFile = {
+      registerFailedDownload: jest.fn(),
+    } as unknown as jest.Mocked<LogFile>;
+
+    downloadService = new DownloadService(mockProgressManager, mockLogFile);
   });
 
   afterEach(() => {
@@ -122,5 +128,52 @@ describe("DownloadService", () => {
         expect(mockProgressManager.completeComic).toHaveBeenCalled();
       }
     );
+
+    it.each([
+      {
+        comicTitle: "Comic 2",
+        imageCount: 17,
+        chapters: [
+          {
+            url: "/chapter-1",
+            title: "Chapter 1",
+            imageLinks: ["img1", "img2", "img3", "img4", "img5"],
+          },
+          {
+            url: "/chapter-2",
+            title: "Chapter 2",
+            imageLinks: ["img1", "img2", "img3", "img4"],
+          },
+          {
+            url: "/chapter-3",
+            title: "Chapter 3",
+            imageLinks: ["img1", "img2"],
+          },
+          {
+            url: "/chapter-4",
+            title: "Chapter 4",
+            imageLinks: ["img1", "img2", "img3", "img4", "img5", "img6"],
+          },
+        ],
+      },
+    ])("should delegate to LogFile on download-related error", async () => {
+      const comicTitle = "Comic 1";
+      const chapter = {
+        title: "Chapter 1",
+        url: "example.com/chapter-1",
+        imageLinks: ["/img1"],
+      };
+      joinSpy.mockReturnValue("/test/path");
+      imageSpy.mockImplementationOnce(() => {
+        throw new Error();
+      });
+
+      await downloadService.start(comicTitle, [chapter]);
+
+      expect(mockLogFile.registerFailedDownload).toHaveBeenCalledWith({
+        chapter,
+        image: { url: chapter.imageLinks[0], index: 0 },
+      });
+    });
   });
 });
