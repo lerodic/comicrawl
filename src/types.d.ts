@@ -45,6 +45,6 @@ export interface ProgressInfo {
 export type EventEmitter = typeof emitter;
 
 export type ComicrawlEvents = {
-  applicationTerminated: void;
+  sessionTerminated: void;
 };
 
