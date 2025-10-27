@@ -28,7 +28,7 @@ class PreparationService {
 
     await this.crawlerFactory.getCrawler().terminate();
 
-    return { title, chapters: preparedChapters };
+    return { url, title, chapters: preparedChapters };
   }
 
   private async getChaptersToDownload(
