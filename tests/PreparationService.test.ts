@@ -112,7 +112,7 @@ describe("PreparationService", () => {
         ],
       },
     ])(
-      "should correctly prepare all $chapters.length chapters for '$title'",
+      "should correctly prepare all chapters ($chapters.length) for '$title'",
       async ({ url, title, chapters, preparedChapters }) => {
         mockPrompt.getUrl.mockResolvedValue(url);
         mockCrawler.extractTitle.mockResolvedValue(title);
@@ -126,7 +126,11 @@ describe("PreparationService", () => {
 
         const result = await preparationService.start();
 
-        expect(result).toStrictEqual({ title, chapters: preparedChapters });
+        expect(result).toStrictEqual({
+          url,
+          title,
+          chapters: preparedChapters,
+        });
         expect(mockProgressManager.createPreparationBar).toHaveBeenCalledWith(
           title,
           preparedChapters.length
@@ -228,7 +232,11 @@ describe("PreparationService", () => {
 
         const result = await preparationService.start();
 
-        expect(result).toStrictEqual({ title, chapters: preparedChapters });
+        expect(result).toStrictEqual({
+          url,
+          title,
+          chapters: preparedChapters,
+        });
         expect(mockProgressManager.createPreparationBar).toHaveBeenCalledWith(
           title,
           preparedChapters.length
@@ -330,7 +338,11 @@ describe("PreparationService", () => {
 
         const result = await preparationService.start();
 
-        expect(result).toStrictEqual({ title, chapters: preparedChapters });
+        expect(result).toStrictEqual({
+          url,
+          title,
+          chapters: preparedChapters,
+        });
         expect(mockProgressManager.createPreparationBar).toHaveBeenCalledWith(
           title,
           preparedChapters.length
@@ -435,7 +447,11 @@ describe("PreparationService", () => {
 
         const result = await preparationService.start();
 
-        expect(result).toStrictEqual({ title, chapters: preparedChapters });
+        expect(result).toStrictEqual({
+          url,
+          title,
+          chapters: preparedChapters,
+        });
         expect(mockProgressManager.createPreparationBar).toHaveBeenCalledWith(
           title,
           preparedChapters.length
