@@ -7,12 +7,14 @@ import fs from "fs/promises";
 import TYPES from "../../config/inversify/inversify.types";
 import ProgressManager from "../io/progress/ProgressManager";
 import { limit } from "../../utils/performance";
+import LogFile from "../io/LogFile";
 
 @boundClass
 @injectable()
 class DownloadService {
   constructor(
-    @inject(TYPES.ProgressManager) private progress: ProgressManager
+    @inject(TYPES.ProgressManager) private progress: ProgressManager,
+    @inject(TYPES.LogFile) private logFile: LogFile
   ) {}
 
   async start(comicTitle: string, chapters: DownloadableChapter[]) {
@@ -35,15 +37,20 @@ class DownloadService {
     this.progress.createChapterBar(chapter.title, chapter.imageLinks.length);
 
     await limit(
-      chapter.imageLinks.map((imageLink, index) => async () => {
+      chapter.imageLinks.map((url, index) => async () => {
         try {
           return download.image({
-            url: imageLink,
+            url,
             dest: path.join(
               this.getChapterPath(comicTitle, chapter.title),
               `${index + 1}.png`
             ),
             timeout: 0,
+          });
+        } catch {
+          this.logFile.registerFailedDownload({
+            chapter,
+            image: { url, index },
           });
         } finally {
           this.progress.advanceChapter();
