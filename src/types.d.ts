@@ -32,6 +32,7 @@ export type DownloadableChapter = Chapter & {
 export type DownloadOption = (typeof DOWNLOAD_OPTIONS)[number];
 
 export interface DownloadInfo {
+  url: string;
   title: string;
   chapters: DownloadableChapter[];
 }
@@ -45,6 +46,45 @@ export interface ProgressInfo {
 export type EventEmitter = typeof emitter;
 
 export type ComicrawlEvents = {
-  applicationTerminated: void;
+  sessionStarted: SessionStarted;
+  downloadFailed: DownloadFailed;
+  sessionTerminated: void;
 };
 
+export interface SessionStarted {
+  title: string;
+  url: string;
+}
+
+export interface DownloadFailed {
+  chapter: Chapter;
+  image: ImageInfo;
+}
+
+export interface LogFileContent {
+  comic: {
+    title: string | undefined;
+    url: string | undefined;
+  };
+  createdAt: Date;
+  failedDownloads: FailedDownloads;
+  sourceOfTermination: SourceOfTermination;
+}
+
+export interface ImageInfo {
+  index: number;
+  url: string;
+}
+
+export type SourceOfTermination = "User" | "Error" | "Program";
+
+export type FailedDownloads = Record<string, ImageInfo[]>;
+
+export interface LogFileUpdate {
+  comic?: {
+    title: string;
+    url: string;
+  };
+  failedDownloads?: FailedDownloads;
+  sourceOfTermination?: SourceOfTermination;
+}

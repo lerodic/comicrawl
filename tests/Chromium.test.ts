@@ -152,9 +152,9 @@ describe("Chromium", () => {
   });
 
   describe("attach event listeners", () => {
-    it("should list for 'applicationTerminated' event", async () => {
+    it("should list for 'sessionTerminated' event", async () => {
       expect(mockEventEmitter.on).toHaveBeenCalledWith(
-        "applicationTerminated",
+        "sessionTerminated",
         chromium.terminate
       );
     });

@@ -6,6 +6,7 @@ import PreparationService from "../src/core/download/PreparationService";
 import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
 import DownloadService from "../src/core/download/DownloadService";
 import ErrorHandler from "../src/core/error/ErrorHandler";
+import LogFile from "../src/core/io/LogFile";
 
 jest.mock("p-limit", () => {
   return () => {
@@ -19,6 +20,7 @@ describe("Comicrawl", () => {
   let mockDownloadService: jest.Mocked<DownloadService>;
   let mockErrorHandler: jest.Mocked<ErrorHandler>;
   let mockEventEmitter: jest.Mocked<EventEmitter>;
+  let mockLogFile: jest.Mocked<LogFile>;
 
   beforeEach(() => {
     mockPreparationService = {
@@ -38,11 +40,18 @@ describe("Comicrawl", () => {
       emit: jest.fn(),
     } as unknown as jest.Mocked<EventEmitter>;
 
+    mockLogFile = {
+      create: jest.fn(),
+      registerSessionInfo: jest.fn(),
+      dump: jest.fn(),
+    } as unknown as jest.Mocked<LogFile>;
+
     comicrawl = new Comicrawl(
       mockPreparationService,
       mockDownloadService,
       mockErrorHandler,
-      mockEventEmitter
+      mockEventEmitter,
+      mockLogFile
     );
   });
 
@@ -54,33 +63,38 @@ describe("Comicrawl", () => {
     it.each([
       {
         title: "Comic 1",
+        url: "example.com/comic-1",
         chapters: [
           {
             title: "Chapter 1",
-            url: "example.com/chapter-1",
+            url: "example.com/comic-1/chapter-1",
             imageLinks: ["img1", "img2", "img3"],
           },
           {
             title: "Chapter 2",
-            url: "example.com/chapter-2",
+            url: "example.com/comic-1/chapter-2",
             imageLinks: ["img1", "img2", "img3", "img4"],
           },
           {
             title: "Chapter 3",
-            url: "example.com/chapter-3",
+            url: "example.com/comic-1/chapter-3",
             imageLinks: ["img1", "img2", "img3"],
           },
         ],
       },
-    ])("should execute correctly", async ({ title, chapters }) => {
-      mockPreparationService.start.mockResolvedValue({ title, chapters });
+    ])("should execute correctly", async ({ url, title, chapters }) => {
+      mockPreparationService.start.mockResolvedValue({ url, title, chapters });
 
       await comicrawl.run();
 
+      expect(mockLogFile.create).toHaveBeenCalled();
+      expect(mockLogFile.registerSessionInfo).toHaveBeenCalledWith({
+        url,
+        title,
+      });
       expect(mockDownloadService.start).toHaveBeenCalledWith(title, chapters);
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
-        "applicationTerminated"
-      );
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
+      expect(mockLogFile.dump).toHaveBeenCalledWith("Program");
     });
 
     it("should exit early if graphic novel does not contain any chapters", async () => {
@@ -92,9 +106,8 @@ describe("Comicrawl", () => {
       await comicrawl.run();
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
-        "applicationTerminated"
-      );
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
+      expect(mockLogFile.dump).toHaveBeenCalledWith("Error");
     });
 
     it("should exit early if crawler initialization fails", async () => {
@@ -106,9 +119,8 @@ describe("Comicrawl", () => {
       await comicrawl.run();
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
-        "applicationTerminated"
-      );
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
+      expect(mockLogFile.dump).toHaveBeenCalledWith("Error");
     });
 
     it("should terminate correctly on unexpected error", async () => {
@@ -120,9 +132,8 @@ describe("Comicrawl", () => {
       await comicrawl.run();
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
-        "applicationTerminated"
-      );
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
+      expect(mockLogFile.dump).toHaveBeenCalledWith("Error");
     });
 
     it("should correctly listen for SIGINT event and act accordingly", async () => {
@@ -132,9 +143,8 @@ describe("Comicrawl", () => {
 
       await comicrawl.run();
 
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
-        "applicationTerminated"
-      );
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
+      expect(mockLogFile.dump).toHaveBeenCalledWith("User");
     });
   });
 });

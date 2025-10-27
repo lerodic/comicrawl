@@ -1,6 +1,6 @@
 class CrawlerInitializationFailed extends Error {
   constructor() {
-    super("Failed to initialize crawler. Please try again.\n");
+    super("Failed to initialize crawler. Please try again.");
   }
 }
 

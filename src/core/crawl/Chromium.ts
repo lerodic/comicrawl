@@ -15,7 +15,7 @@ class Chromium {
   private blocker: PuppeteerBlocker | undefined = undefined;
 
   constructor(@inject(TYPES.EventEmitter) private emitter: EventEmitter) {
-    this.emitter.on("applicationTerminated", this.terminate);
+    this.emitter.on("sessionTerminated", this.terminate);
   }
 
   async openPage(
