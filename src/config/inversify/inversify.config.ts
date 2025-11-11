@@ -17,8 +17,6 @@ import { Container } from "inversify";
 import ErrorHandler from "../../core/error/ErrorHandler";
 import DownloadService from "../../core/download/DownloadService";
 import PreparationService from "../../core/download/PreparationService";
-import emitter from "../../core/events/emitter";
-import { EventEmitter } from "../../types";
 import LogFile from "../../core/io/LogFile";
 
 function setupContainer(): Container {
@@ -85,8 +83,6 @@ function setupContainer(): Container {
     .bind<ErrorHandler>(TYPES.ErrorHandler)
     .to(ErrorHandler)
     .inSingletonScope();
-
-  container.bind<EventEmitter>(TYPES.EventEmitter).toConstantValue(emitter);
 
   container.bind<LogFile>(TYPES.LogFile).to(LogFile).inSingletonScope();
 
