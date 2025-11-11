@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import Comicrawl from "../src/core/Comicrawl";
-import { EventEmitter } from "../src/types";
 import CrawlerInitializationFailed from "../src/core/error/errors/CrawlerInitializationFailed";
 import PreparationService from "../src/core/download/PreparationService";
 import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
@@ -19,7 +18,6 @@ describe("Comicrawl", () => {
   let mockPreparationService: jest.Mocked<PreparationService>;
   let mockDownloadService: jest.Mocked<DownloadService>;
   let mockErrorHandler: jest.Mocked<ErrorHandler>;
-  let mockEventEmitter: jest.Mocked<EventEmitter>;
   let mockLogFile: jest.Mocked<LogFile>;
 
   beforeEach(() => {
@@ -35,11 +33,6 @@ describe("Comicrawl", () => {
       handle: jest.fn(),
     } as unknown as jest.Mocked<ErrorHandler>;
 
-    mockEventEmitter = {
-      on: jest.fn(),
-      emit: jest.fn(),
-    } as unknown as jest.Mocked<EventEmitter>;
-
     mockLogFile = {
       create: jest.fn(),
       registerSessionInfo: jest.fn(),
@@ -50,7 +43,6 @@ describe("Comicrawl", () => {
       mockPreparationService,
       mockDownloadService,
       mockErrorHandler,
-      mockEventEmitter,
       mockLogFile
     );
   });
@@ -93,7 +85,6 @@ describe("Comicrawl", () => {
         title,
       });
       expect(mockDownloadService.start).toHaveBeenCalledWith(title, chapters);
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
       expect(mockLogFile.dump).toHaveBeenCalledWith("Program");
     });
 
@@ -106,7 +97,6 @@ describe("Comicrawl", () => {
       await comicrawl.run();
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
       expect(mockLogFile.dump).toHaveBeenCalledWith("Error");
     });
 
@@ -119,7 +109,6 @@ describe("Comicrawl", () => {
       await comicrawl.run();
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
       expect(mockLogFile.dump).toHaveBeenCalledWith("Error");
     });
 
@@ -132,7 +121,6 @@ describe("Comicrawl", () => {
       await comicrawl.run();
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
       expect(mockLogFile.dump).toHaveBeenCalledWith("Error");
     });
 
@@ -143,7 +131,6 @@ describe("Comicrawl", () => {
 
       await comicrawl.run();
 
-      expect(mockEventEmitter.emit).toHaveBeenCalledWith("sessionTerminated");
       expect(mockLogFile.dump).toHaveBeenCalledWith("User");
     });
   });

@@ -1,11 +1,9 @@
 import { boundClass } from "autobind-decorator";
-import { inject, injectable } from "inversify";
+import { injectable } from "inversify";
 import puppeteer, { Browser, PuppeteerLifeCycleEvent } from "puppeteer";
 import CONFIG from "../../config/app.config";
 import MissingChromiumInstance from "../error/errors/MissingChromiumInstance";
 import { PuppeteerBlocker } from "@ghostery/adblocker-puppeteer";
-import TYPES from "../../config/inversify/inversify.types";
-import { EventEmitter } from "../../types";
 
 @boundClass
 @injectable()
@@ -13,10 +11,6 @@ class Chromium {
   private browserLaunchPromise: Promise<Browser> | undefined = undefined;
   private browser: Browser | undefined = undefined;
   private blocker: PuppeteerBlocker | undefined = undefined;
-
-  constructor(@inject(TYPES.EventEmitter) private emitter: EventEmitter) {
-    this.emitter.on("sessionTerminated", this.terminate);
-  }
 
   async openPage(
     url: string,
@@ -109,7 +103,9 @@ class Chromium {
     }
 
     for (const page of openPages) {
-      await page.close();
+      try {
+        await page.close();
+      } catch {}
     }
   }
 

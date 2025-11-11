@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import TYPES from "../config/inversify/inversify.types";
 import DownloadService from "./download/DownloadService";
 import PreparationService from "./download/PreparationService";
-import { EventEmitter, SourceOfTermination } from "../types";
+import { SourceOfTermination } from "../types";
 import ErrorHandler from "./error/ErrorHandler";
 import LogFile from "./io/LogFile";
 
@@ -14,7 +14,6 @@ class Comicrawl {
     @inject(TYPES.PreparationService) private preparation: PreparationService,
     @inject(TYPES.DownloadService) private download: DownloadService,
     @inject(TYPES.ErrorHandler) private errorHandler: ErrorHandler,
-    @inject(TYPES.EventEmitter) private emitter: EventEmitter,
     @inject(TYPES.LogFile) private logFile: LogFile
   ) {}
 
@@ -56,8 +55,11 @@ class Comicrawl {
   }
 
   private async shutdown(sourceOfTermination: SourceOfTermination = "Program") {
-    this.emitter.emit("sessionTerminated");
     await this.logFile.dump(sourceOfTermination);
+
+    if (process.env.NODE_ENV !== "test") {
+      process.exit(0);
+    }
   }
 }
 

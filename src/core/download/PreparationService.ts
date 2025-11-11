@@ -1,12 +1,18 @@
 import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
-import { Chapter, DownloadableChapter, DownloadInfo } from "../../types";
+import {
+  Chapter,
+  Crawler,
+  DownloadableChapter,
+  DownloadInfo,
+} from "../../types";
 import EmptyGraphicNovel from "../error/errors/EmptyGraphicNovel";
 import { limit } from "../../utils/performance";
 import TYPES from "../../config/inversify/inversify.types";
 import Prompt from "../io/Prompt";
 import CrawlerFactory from "../factories/CrawlerFactory";
 import ProgressManager from "../io/progress/ProgressManager";
+import ConnectionInterrupted from "../error/errors/ConnectionInterrupted";
 
 @boundClass
 @injectable()
@@ -18,6 +24,16 @@ class PreparationService {
   ) {}
 
   async start(): Promise<DownloadInfo> {
+    try {
+      return await this.extractMangaInfo();
+    } catch {
+      throw new ConnectionInterrupted();
+    } finally {
+      await this.crawlerFactory.getCrawler().terminate();
+    }
+  }
+
+  private async extractMangaInfo(): Promise<DownloadInfo> {
     const url = await this.prompt.getUrl();
     const title = await this.crawlerFactory.getCrawler(url).extractTitle(url);
     const selectedChapters = await this.getChaptersToDownload(url, title);
@@ -25,8 +41,6 @@ class PreparationService {
       title,
       selectedChapters
     );
-
-    await this.crawlerFactory.getCrawler().terminate();
 
     return { url, title, chapters: preparedChapters };
   }
@@ -97,21 +111,31 @@ class PreparationService {
     this.progress.createPreparationBar(title, chapters.length);
     const crawler = this.crawlerFactory.getCrawler();
 
+    try {
+      return await this.prepareChapterImages(chapters, crawler);
+    } catch {
+      throw new ConnectionInterrupted();
+    }
+  }
+
+  private async prepareChapterImages(chapters: Chapter[], crawler: Crawler) {
     const downloadableChapters = await limit(
       chapters.map((chapter) => async () => {
-        try {
-          const imageLinks = await crawler.extractImageLinks(chapter.url);
-
-          return { ...chapter, imageLinks };
-        } finally {
-          this.progress.advancePreparation();
-        }
+        return this.prepareChapter(crawler, chapter);
       })
     );
 
     this.progress.completePreparation();
 
     return downloadableChapters;
+  }
+
+  private async prepareChapter(crawler: Crawler, chapter: Chapter) {
+    const imageLinks = await crawler.extractImageLinks(chapter.url);
+
+    this.progress.advancePreparation();
+
+    return { ...chapter, imageLinks };
   }
 }
 

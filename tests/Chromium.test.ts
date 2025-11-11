@@ -4,7 +4,6 @@ import MissingChromiumInstance from "../src/core/error/errors/MissingChromiumIns
 import CONFIG from "../src/config/app.config";
 import puppeteer, { Browser, Page } from "puppeteer";
 import { PuppeteerBlocker } from "@ghostery/adblocker-puppeteer";
-import { EventEmitter } from "../src/types";
 
 jest.mock("puppeteer");
 jest.mock("cross-fetch", () => jest.fn());
@@ -27,7 +26,6 @@ describe("Chromium", () => {
   let mockBrowser: jest.Mocked<Browser>;
   let mockPage: jest.Mocked<Page>;
   let mockBlocker: jest.Mocked<PuppeteerBlocker>;
-  let mockEventEmitter: jest.Mocked<EventEmitter>;
 
   beforeEach(() => {
     mockPage = {
@@ -48,12 +46,7 @@ describe("Chromium", () => {
       enableBlockingInPage: jest.fn(),
     } as unknown as jest.Mocked<PuppeteerBlocker>;
 
-    mockEventEmitter = {
-      on: jest.fn(),
-      emit: jest.fn(),
-    } as unknown as jest.Mocked<EventEmitter>;
-
-    chromium = new Chromium(mockEventEmitter);
+    chromium = new Chromium();
   });
 
   afterEach(() => {
@@ -148,15 +141,6 @@ describe("Chromium", () => {
 
       expect(mockPage.close).toHaveBeenCalled();
       expect(mockBrowser.close).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe("attach event listeners", () => {
-    it("should list for 'sessionTerminated' event", async () => {
-      expect(mockEventEmitter.on).toHaveBeenCalledWith(
-        "sessionTerminated",
-        chromium.terminate
-      );
     });
   });
 });
