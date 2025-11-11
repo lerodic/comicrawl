@@ -103,7 +103,9 @@ class Chromium {
     }
 
     for (const page of openPages) {
-      await page.close();
+      try {
+        await page.close();
+      } catch {}
     }
   }
 
