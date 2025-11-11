@@ -56,6 +56,10 @@ class Comicrawl {
 
   private async shutdown(sourceOfTermination: SourceOfTermination = "Program") {
     await this.logFile.dump(sourceOfTermination);
+
+    if (process.env.NODE_ENV !== "test") {
+      process.exit(0);
+    }
   }
 }
 
