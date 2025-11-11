@@ -26,8 +26,6 @@ class PreparationService {
   async start(): Promise<DownloadInfo> {
     try {
       return await this.extractMangaInfo();
-    } catch {
-      throw new ConnectionInterrupted();
     } finally {
       await this.crawlerFactory.getCrawler().terminate();
     }
