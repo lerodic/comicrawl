@@ -8,10 +8,14 @@ import TYPES from "../../config/inversify/inversify.types";
 import ProgressManager from "../io/progress/ProgressManager";
 import { limit } from "../../utils/performance";
 import LogFile from "../io/LogFile";
+import dns from "dns/promises";
+import ConnectionInterrupted from "../error/errors/ConnectionInterrupted";
 
 @boundClass
 @injectable()
 class DownloadService {
+  private DOWNLOAD_TIMEOUT = 30_000;
+
   constructor(
     @inject(TYPES.ProgressManager) private progress: ProgressManager,
     @inject(TYPES.LogFile) private logFile: LogFile
@@ -37,29 +41,38 @@ class DownloadService {
 
     this.progress.createChapterBar(chapter.title, chapter.imageLinks.length);
 
-    await limit(
+    try {
+      await this.downloadChapterImages(chapter, comicTitle, chapters);
+    } catch {
+      throw new ConnectionInterrupted();
+    }
+
+    this.progress.completeChapter();
+  }
+
+  private async downloadChapterImages(
+    chapter: DownloadableChapter,
+    comicTitle: string,
+    chapters: DownloadableChapter[]
+  ) {
+    return limit(
       chapter.imageLinks.map((url, index) => async () => {
         try {
-          return download.image({
+          return await download.image({
             url,
             dest: path.join(
               this.getChapterPath(comicTitle, chapter.title),
               `${this.getImageIndex(chapters, chapter, index + 1)}.png`
             ),
-            timeout: 0,
+            timeout: this.DOWNLOAD_TIMEOUT,
           });
         } catch {
-          this.logFile.registerFailedDownload({
-            chapter,
-            image: { url, index },
-          });
+          await this.handleDownloadError(chapter, url, index);
         } finally {
           this.progress.advanceChapter();
         }
       })
     );
-
-    this.progress.completeChapter();
   }
 
   private getChapterPath(comicTitle: string, chapterTitle: string): string {
@@ -97,6 +110,31 @@ class DownloadService {
 
   private sanitize(input: string): string {
     return input.replaceAll(" ", "-").toLowerCase();
+  }
+
+  private async handleDownloadError(
+    chapter: DownloadableChapter,
+    url: string,
+    index: number
+  ) {
+    this.logFile.registerFailedDownload({
+      chapter,
+      image: { url, index },
+    });
+
+    if (!(await this.isNetworkConnectionActive())) {
+      throw new ConnectionInterrupted();
+    }
+  }
+
+  private async isNetworkConnectionActive(): Promise<boolean> {
+    try {
+      await dns.lookup("google.com");
+
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 
