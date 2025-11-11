@@ -1,4 +1,5 @@
 import ErrorHandler from "../src/core/error/ErrorHandler";
+import ConnectionInterrupted from "../src/core/error/errors/ConnectionInterrupted";
 import CrawlerInitializationFailed from "../src/core/error/errors/CrawlerInitializationFailed";
 import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
 import LogFileCreationFailed from "../src/core/error/errors/LogFileCreationFailed";
@@ -40,6 +41,30 @@ describe("ErrorHandler", () => {
         errorHandler.handle(err);
 
         expect(mockLogger.error).toHaveBeenCalledWith(`\n${message}`);
+      }
+    );
+
+    it.each([
+      {
+        err: new Error("getaddrinfo ENOTFOUND"),
+      },
+      {
+        err: new Error("getaddrinfo ENOTFOUND https://example.com"),
+      },
+      {
+        err: new Error("net::ERR_INTERNET_DISCONNECTED"),
+      },
+      {
+        err: new ConnectionInterrupted(),
+      },
+    ])(
+      "should handle network-related error with message: '$err.message'",
+      async ({ err }) => {
+        errorHandler.handle(err);
+
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          `\nNetwork connection lost.`
+        );
       }
     );
 
