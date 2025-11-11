@@ -1,4 +1,5 @@
 import PreparationService from "../src/core/download/PreparationService";
+import ConnectionInterrupted from "../src/core/error/errors/ConnectionInterrupted";
 import CrawlerFactory from "../src/core/factories/CrawlerFactory";
 import ProgressManager from "../src/core/io/progress/ProgressManager";
 import Prompt from "../src/core/io/Prompt";
@@ -469,6 +470,40 @@ describe("PreparationService", () => {
       }
     );
 
-    it("should throw 'EmptyGraphicNovel' error if no chapters can be found", async () => {});
+    it.each([
+      {
+        url: "https://example.com/comic-1",
+        title: "Comic 1",
+        chapters: [
+          {
+            title: "Chapter 1",
+            url: "https://example.com/comic-1/chapter-1",
+          },
+          {
+            title: "Chapter 2",
+            url: "https://example.com/comic-1/chapter-2",
+          },
+          {
+            title: "Chapter 3",
+            url: "https://example.com/comic-1/chapter-3",
+          },
+        ],
+      },
+    ])(
+      "should throw 'ConnectionInterrupted' if network connection is lost during chapter preparation",
+      async ({ url, title, chapters }) => {
+        mockPrompt.getUrl.mockResolvedValue(url);
+        mockCrawler.extractTitle.mockResolvedValue(title);
+        mockCrawler.extractChapters.mockResolvedValue(chapters);
+        mockPrompt.getDownloadOption.mockResolvedValue("All");
+        mockCrawler.extractImageLinks.mockImplementationOnce(async () => {
+          throw new Error();
+        });
+
+        await expect(preparationService.start()).rejects.toThrow(
+          ConnectionInterrupted
+        );
+      }
+    );
   });
 });
