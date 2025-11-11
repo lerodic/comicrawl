@@ -1,5 +1,6 @@
 import PreparationService from "../src/core/download/PreparationService";
 import ConnectionInterrupted from "../src/core/error/errors/ConnectionInterrupted";
+import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
 import CrawlerFactory from "../src/core/factories/CrawlerFactory";
 import ProgressManager from "../src/core/io/progress/ProgressManager";
 import Prompt from "../src/core/io/Prompt";
@@ -505,5 +506,15 @@ describe("PreparationService", () => {
         );
       }
     );
+
+    it("should throw 'EmptyGraphicNovel' error if no chapters can be found", async () => {
+      mockPrompt.getUrl.mockResolvedValue("https://example.com");
+      mockCrawler.extractTitle.mockResolvedValue("Comic 1");
+      mockCrawler.extractChapters.mockResolvedValue([]);
+
+      await expect(preparationService.start()).rejects.toThrow(
+        EmptyGraphicNovel
+      );
+    });
   });
 });
