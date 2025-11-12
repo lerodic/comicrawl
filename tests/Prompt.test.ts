@@ -3,6 +3,7 @@ import Prompt from "../src/core/io/Prompt";
 import Logger from "../src/core/io/Logger";
 import inquirer from "inquirer";
 import CONFIG from "../src/config/app.config";
+import { DownloadOption } from "../src/config/constants";
 
 jest.mock("inquirer");
 jest.mock("../src/config/app.config", () => ({
@@ -71,10 +72,22 @@ describe("Prompt", () => {
 
   describe("getDownloadOption", () => {
     it.each([
-      { title: "Comic 1", itemsTotal: 15, downloadOption: "All" },
-      { title: "Comic 2", itemsTotal: 30, downloadOption: "Partial" },
-      { title: "Comic 3", itemsTotal: 120, downloadOption: "Selective" },
-      { title: "Comic 4", itemsTotal: 19, downloadOption: "Range" },
+      { title: "Comic 1", itemsTotal: 15, downloadOption: DownloadOption.All },
+      {
+        title: "Comic 2",
+        itemsTotal: 30,
+        downloadOption: DownloadOption.Partial,
+      },
+      {
+        title: "Comic 3",
+        itemsTotal: 120,
+        downloadOption: DownloadOption.Selective,
+      },
+      {
+        title: "Comic 4",
+        itemsTotal: 19,
+        downloadOption: DownloadOption.Range,
+      },
     ])(
       "should return '$downloadOption'",
       async ({ title, itemsTotal, downloadOption }) => {

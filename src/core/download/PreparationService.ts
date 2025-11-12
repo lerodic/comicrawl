@@ -13,6 +13,7 @@ import Prompt from "../io/Prompt";
 import CrawlerFactory from "../factories/CrawlerFactory";
 import ProgressManager from "../io/progress/ProgressManager";
 import ConnectionInterrupted from "../error/errors/ConnectionInterrupted";
+import { DownloadOption } from "../../config/constants";
 
 @boundClass
 @injectable()
@@ -68,13 +69,13 @@ class PreparationService {
     );
 
     switch (downloadOption) {
-      case "All":
+      case DownloadOption.All:
         return chapters;
-      case "Partial":
+      case DownloadOption.Partial:
         return this.getChaptersStartingAt(chapters);
-      case "Selective":
+      case DownloadOption.Selective:
         return this.getChaptersBySelection(chapters);
-      case "Range":
+      case DownloadOption.Range:
         return this.getChaptersInRange(chapters);
     }
   }

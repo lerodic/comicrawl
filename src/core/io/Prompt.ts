@@ -6,8 +6,8 @@ import CONFIG from "../../config/app.config";
 import TYPES from "../../config/inversify/inversify.types";
 import Logger from "./Logger";
 import chalk from "chalk";
-import { Chapter, DownloadOption } from "../../types";
-import { DOWNLOAD_OPTIONS } from "../../config/constants";
+import { Chapter } from "../../types";
+import { DOWNLOAD_OPTIONS, DownloadOption } from "../../config/constants";
 
 @boundClass
 @injectable()
@@ -57,7 +57,7 @@ class Prompt {
       {
         type: "list",
         name: "downloadOption",
-        message: chalk.magentaBright.bold("I would like to download..."),
+        message: chalk.magentaBright.bold("I would like to download"),
         choices: DOWNLOAD_OPTIONS,
       },
     ]);
