@@ -133,5 +133,14 @@ describe("Comicrawl", () => {
 
       expect(mockLogFile.dump).toHaveBeenCalledWith("User");
     });
+
+    it("should only ever perform shutdown once, no matter how often the shutdown process is initiated", async () => {
+      await (comicrawl as any).init();
+
+      await (comicrawl as any).shutdown("User");
+      await (comicrawl as any).shutdown("User");
+
+      expect(mockLogFile.dump).toHaveBeenCalledTimes(1);
+    });
   });
 });
