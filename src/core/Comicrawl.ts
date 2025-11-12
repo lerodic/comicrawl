@@ -10,6 +10,8 @@ import LogFile from "./io/LogFile";
 @boundClass
 @injectable()
 class Comicrawl {
+  private hasShutdownBeenInitiated = false;
+
   constructor(
     @inject(TYPES.PreparationService) private preparation: PreparationService,
     @inject(TYPES.DownloadService) private download: DownloadService,
@@ -55,6 +57,9 @@ class Comicrawl {
   }
 
   private async shutdown(sourceOfTermination: SourceOfTermination = "Program") {
+    if (this.hasShutdownBeenInitiated) return;
+    this.hasShutdownBeenInitiated = true;
+
     await this.logFile.dump(sourceOfTermination);
 
     if (process.env.NODE_ENV !== "test") {
