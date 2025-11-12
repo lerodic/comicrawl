@@ -58,7 +58,7 @@ class DownloadService {
     return limit(
       chapter.imageLinks.map((url, index) => async () => {
         try {
-          return await download.image({
+          await download.image({
             url,
             dest: path.join(
               this.getChapterPath(comicTitle, chapter.title),
@@ -66,10 +66,10 @@ class DownloadService {
             ),
             timeout: this.DOWNLOAD_TIMEOUT,
           });
+
+          this.progress.advanceChapter();
         } catch {
           await this.handleDownloadError(chapter, url, index);
-        } finally {
-          this.progress.advanceChapter();
         }
       })
     );
@@ -125,6 +125,8 @@ class DownloadService {
     if (!(await this.isNetworkConnectionActive())) {
       throw new ConnectionInterrupted();
     }
+
+    this.progress.advanceChapter();
   }
 
   private async isNetworkConnectionActive(): Promise<boolean> {
