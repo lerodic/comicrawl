@@ -1,3 +1,4 @@
+import { DownloadOption } from "../src/config/constants";
 import PreparationService from "../src/core/download/PreparationService";
 import ConnectionInterrupted from "../src/core/error/errors/ConnectionInterrupted";
 import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
@@ -119,7 +120,7 @@ describe("PreparationService", () => {
         mockPrompt.getUrl.mockResolvedValue(url);
         mockCrawler.extractTitle.mockResolvedValue(title);
         mockCrawler.extractChapters.mockResolvedValue(chapters);
-        mockPrompt.getDownloadOption.mockResolvedValue("All");
+        mockPrompt.getDownloadOption.mockResolvedValue(DownloadOption.All);
         preparedChapters.forEach((chapter) => {
           mockCrawler.extractImageLinks.mockResolvedValueOnce(
             chapter.imageLinks
@@ -224,7 +225,7 @@ describe("PreparationService", () => {
         mockPrompt.getUrl.mockResolvedValue(url);
         mockCrawler.extractTitle.mockResolvedValue(title);
         mockCrawler.extractChapters.mockResolvedValue(chapters);
-        mockPrompt.getDownloadOption.mockResolvedValue("Partial");
+        mockPrompt.getDownloadOption.mockResolvedValue(DownloadOption.Partial);
         mockPrompt.getChaptersStartingAt.mockResolvedValue(startingAt);
         preparedChapters.forEach((_, index) => {
           mockCrawler.extractImageLinks.mockResolvedValueOnce(
@@ -330,7 +331,9 @@ describe("PreparationService", () => {
         mockPrompt.getUrl.mockResolvedValue(url);
         mockCrawler.extractTitle.mockResolvedValue(title);
         mockCrawler.extractChapters.mockResolvedValue(chapters);
-        mockPrompt.getDownloadOption.mockResolvedValue("Selective");
+        mockPrompt.getDownloadOption.mockResolvedValue(
+          DownloadOption.Selective
+        );
         mockPrompt.getChaptersFromList.mockResolvedValue(selected);
         preparedChapters.forEach((_, index) => {
           mockCrawler.extractImageLinks.mockResolvedValueOnce(
@@ -438,7 +441,7 @@ describe("PreparationService", () => {
         mockPrompt.getUrl.mockResolvedValue(url);
         mockCrawler.extractTitle.mockResolvedValue(title);
         mockCrawler.extractChapters.mockResolvedValue(chapters);
-        mockPrompt.getDownloadOption.mockResolvedValue("Range");
+        mockPrompt.getDownloadOption.mockResolvedValue(DownloadOption.Range);
         mockPrompt.getChaptersStartingAt.mockResolvedValue(from);
         mockPrompt.getChaptersEndpoint.mockResolvedValue(to);
         preparedChapters.forEach((_, index) => {
@@ -496,7 +499,7 @@ describe("PreparationService", () => {
         mockPrompt.getUrl.mockResolvedValue(url);
         mockCrawler.extractTitle.mockResolvedValue(title);
         mockCrawler.extractChapters.mockResolvedValue(chapters);
-        mockPrompt.getDownloadOption.mockResolvedValue("All");
+        mockPrompt.getDownloadOption.mockResolvedValue(DownloadOption.All);
         mockCrawler.extractImageLinks.mockImplementationOnce(async () => {
           throw new Error();
         });
