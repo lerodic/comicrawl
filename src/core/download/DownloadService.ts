@@ -62,7 +62,7 @@ class DownloadService {
             url,
             dest: path.join(
               this.getChapterPath(comicTitle, chapter.title),
-              `${this.getImageIndex(chapters, chapter, index + 1)}.png`
+              `${index + 1}.png`
             ),
             timeout: this.DOWNLOAD_TIMEOUT,
           });
@@ -85,21 +85,6 @@ class DownloadService {
       this.sanitize(comicTitle),
       this.sanitize(chapterTitle)
     );
-  }
-
-  private getImageIndex(
-    chapters: DownloadableChapter[],
-    currentChapter: DownloadableChapter,
-    imageIndex: number
-  ): number {
-    const previousChapters = chapters.slice(
-      0,
-      chapters.indexOf(currentChapter)
-    );
-
-    return previousChapters.reduce((prev, current) => {
-      return prev + current.imageLinks.length;
-    }, imageIndex);
   }
 
   private async createChapterFolder(comicTitle: string, chapterTitle: string) {
