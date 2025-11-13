@@ -25,13 +25,17 @@ export interface Chapter {
 }
 
 export type DownloadableChapter = Chapter & {
-  imageLinks: string[];
+  images: string[];
+};
+
+export type PreparedChapter = Chapter & {
+  images: ImageInfo[];
 };
 
 export interface DownloadInfo {
   url: string;
   title: string;
-  chapters: DownloadableChapter[];
+  chapters: PreparedChapter[];
 }
 
 export interface ProgressInfo {
