@@ -4,7 +4,7 @@ import LogFile from "../src/core/io/LogFile";
 import Logger from "../src/core/io/Logger";
 import fs from "fs/promises";
 import path from "path";
-import { LogFileContent, SourceOfTermination } from "../src/types";
+import { SourceOfTermination } from "../src/types";
 import LogFileCorrupted from "../src/core/error/errors/LogFileCorrupted";
 
 jest.mock("fs/promises");
