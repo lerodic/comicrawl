@@ -75,7 +75,20 @@ describe("PreparationService", () => {
           {
             title: "Chapter 1",
             url: "https://example.com/comic-1/chapter-1",
-            imageLinks: ["img1", "img2", "img3"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+            ],
           },
         ],
       },
@@ -100,17 +113,56 @@ describe("PreparationService", () => {
           {
             title: "Chapter 1",
             url: "https://example.com/comic-2/chapter-1",
-            imageLinks: ["img1", "img2", "img3"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+            ],
           },
           {
             title: "Chapter 2",
             url: "https://example.com/comic-2/chapter-2",
-            imageLinks: ["img1", "img2"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+            ],
           },
           {
             title: "Chapter 3",
             url: "https://example.com/comic-2/chapter-3",
-            imageLinks: ["img1", "img2", "img3", "img4"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+            ],
           },
         ],
       },
@@ -123,7 +175,7 @@ describe("PreparationService", () => {
         mockPrompt.getDownloadOption.mockResolvedValue(DownloadOption.All);
         preparedChapters.forEach((chapter) => {
           mockCrawler.extractImageLinks.mockResolvedValueOnce(
-            chapter.imageLinks
+            chapter.images.map((image) => image.url)
           );
         });
 
@@ -174,17 +226,56 @@ describe("PreparationService", () => {
           {
             title: "Chapter 1",
             url: "https://example.com/comic-1/chapter-1",
-            imageLinks: ["img1", "img2", "img3"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+            ],
           },
           {
             title: "Chapter 2",
             url: "https://example.com/comic-1/chapter-2",
-            imageLinks: ["img1", "img2"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+            ],
           },
           {
             title: "Chapter 3",
             url: "https://example.com/comic-1/chapter-3",
-            imageLinks: ["img1", "img2", "img3", "img4"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+            ],
           },
         ],
       },
@@ -210,12 +301,38 @@ describe("PreparationService", () => {
           {
             title: "Chapter 2",
             url: "https://example.com/comic-2/chapter-2",
-            imageLinks: ["img1", "img2"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+            ],
           },
           {
             title: "Chapter 3",
             url: "https://example.com/comic-2/chapter-3",
-            imageLinks: ["img1", "img2", "img3", "img4"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+            ],
           },
         ],
       },
@@ -229,7 +346,7 @@ describe("PreparationService", () => {
         mockPrompt.getChaptersStartingAt.mockResolvedValue(startingAt);
         preparedChapters.forEach((_, index) => {
           mockCrawler.extractImageLinks.mockResolvedValueOnce(
-            preparedChapters[index].imageLinks
+            preparedChapters[index].images.map((image) => image.url)
           );
         });
 
@@ -280,17 +397,56 @@ describe("PreparationService", () => {
           {
             title: "Chapter 1",
             url: "https://example.com/comic-1/chapter-1",
-            imageLinks: ["img1", "img2", "img3"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+            ],
           },
           {
             title: "Chapter 2",
             url: "https://example.com/comic-1/chapter-2",
-            imageLinks: ["img1", "img2"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+            ],
           },
           {
             title: "Chapter 3",
             url: "https://example.com/comic-1/chapter-3",
-            imageLinks: ["img1", "img2", "img3", "img4"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+            ],
           },
         ],
       },
@@ -316,12 +472,38 @@ describe("PreparationService", () => {
           {
             title: "Chapter 2",
             url: "https://example.com/comic-2/chapter-2",
-            imageLinks: ["img1", "img2"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+            ],
           },
           {
             title: "Chapter 3",
             url: "https://example.com/comic-2/chapter-3",
-            imageLinks: ["img1", "img2", "img3", "img4"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+            ],
           },
         ],
       },
@@ -337,7 +519,7 @@ describe("PreparationService", () => {
         mockPrompt.getChaptersFromList.mockResolvedValue(selected);
         preparedChapters.forEach((_, index) => {
           mockCrawler.extractImageLinks.mockResolvedValueOnce(
-            preparedChapters[index].imageLinks
+            preparedChapters[index].images.map((image) => image.url)
           );
         });
 
@@ -389,17 +571,56 @@ describe("PreparationService", () => {
           {
             title: "Chapter 1",
             url: "https://example.com/comic-1/chapter-1",
-            imageLinks: ["img1", "img2", "img3"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+            ],
           },
           {
             title: "Chapter 2",
             url: "https://example.com/comic-1/chapter-2",
-            imageLinks: ["img1", "img2"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+            ],
           },
           {
             title: "Chapter 3",
             url: "https://example.com/comic-1/chapter-3",
-            imageLinks: ["img1", "img2", "img3", "img4"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+            ],
           },
         ],
       },
@@ -426,12 +647,38 @@ describe("PreparationService", () => {
           {
             title: "Chapter 2",
             url: "https://example.com/comic-2/chapter-2",
-            imageLinks: ["img1", "img2"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+            ],
           },
           {
             title: "Chapter 3",
             url: "https://example.com/comic-2/chapter-3",
-            imageLinks: ["img1", "img2", "img3", "img4"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+            ],
           },
         ],
       },
@@ -446,7 +693,7 @@ describe("PreparationService", () => {
         mockPrompt.getChaptersEndpoint.mockResolvedValue(to);
         preparedChapters.forEach((_, index) => {
           mockCrawler.extractImageLinks.mockResolvedValueOnce(
-            preparedChapters[index].imageLinks
+            preparedChapters[index].images.map((image) => image.url)
           );
         });
 
