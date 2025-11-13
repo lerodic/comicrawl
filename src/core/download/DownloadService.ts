@@ -1,6 +1,6 @@
 import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
-import { DownloadableChapter } from "../../types";
+import { PreparedChapter } from "../../types";
 import download from "image-downloader";
 import path from "path";
 import fs from "fs/promises";
@@ -21,7 +21,7 @@ class DownloadService {
     @inject(TYPES.LogFile) private logFile: LogFile
   ) {}
 
-  async start(comicTitle: string, chapters: DownloadableChapter[]) {
+  async start(comicTitle: string, chapters: PreparedChapter[]) {
     this.progress.createComicBar(comicTitle, chapters.length);
 
     for (const chapter of chapters) {
@@ -33,16 +33,16 @@ class DownloadService {
   }
 
   private async downloadChapter(
-    chapters: DownloadableChapter[],
+    chapters: PreparedChapter[],
     comicTitle: string,
-    chapter: DownloadableChapter
+    chapter: PreparedChapter
   ) {
     await this.createChapterFolder(comicTitle, chapter.title);
 
-    this.progress.createChapterBar(chapter.title, chapter.imageLinks.length);
+    this.progress.createChapterBar(chapter.title, chapter.images.length);
 
     try {
-      await this.downloadChapterImages(chapter, comicTitle, chapters);
+      await this.downloadChapterImages(chapter, comicTitle);
     } catch {
       throw new ConnectionInterrupted();
     }
@@ -51,15 +51,14 @@ class DownloadService {
   }
 
   private async downloadChapterImages(
-    chapter: DownloadableChapter,
-    comicTitle: string,
-    chapters: DownloadableChapter[]
+    chapter: PreparedChapter,
+    comicTitle: string
   ) {
     return limit(
-      chapter.imageLinks.map((url, index) => async () => {
+      chapter.images.map((image, index) => async () => {
         try {
           await download.image({
-            url,
+            url: image.url,
             dest: path.join(
               this.getChapterPath(comicTitle, chapter.title),
               `${index + 1}.png`
@@ -69,7 +68,7 @@ class DownloadService {
 
           this.progress.advanceChapter();
         } catch {
-          await this.handleDownloadError(chapter, url, index);
+          await this.handleDownloadError(chapter, image.url, index);
         }
       })
     );
@@ -98,7 +97,7 @@ class DownloadService {
   }
 
   private async handleDownloadError(
-    chapter: DownloadableChapter,
+    chapter: PreparedChapter,
     url: string,
     index: number
   ) {
