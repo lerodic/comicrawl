@@ -3,7 +3,6 @@ import { inject, injectable } from "inversify";
 import TYPES from "../../config/inversify/inversify.types";
 import Logger from "../io/Logger";
 import EmptyGraphicNovel from "./errors/EmptyGraphicNovel";
-import CrawlerInitializationFailed from "./errors/CrawlerInitializationFailed";
 import LogFileCreationFailed from "./errors/LogFileCreationFailed";
 import ConnectionInterrupted from "./errors/ConnectionInterrupted";
 
@@ -41,11 +40,7 @@ class ErrorHandler {
   }
 
   private isApplicationError(err: any): boolean {
-    const applicationErrors = [
-      EmptyGraphicNovel,
-      CrawlerInitializationFailed,
-      LogFileCreationFailed,
-    ];
+    const applicationErrors = [EmptyGraphicNovel, LogFileCreationFailed];
 
     return applicationErrors.some(
       (applicationError) => err instanceof applicationError
