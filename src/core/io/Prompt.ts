@@ -143,6 +143,41 @@ class Prompt {
 
     return this.getChaptersEndpoint(min, chapters);
   }
+
+  async shouldRetryFailedDownloads(
+    numFailedDownloads: number,
+    comicTitle: string
+  ): Promise<boolean> {
+    this.logger.info(
+      `${chalk.blueBright.bold(
+        numFailedDownloads
+      )} images failed to download for '${chalk.blueBright.bold(
+        comicTitle
+      )}'.\n`
+    );
+
+    const { userChoice } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "userChoice",
+        message: chalk.magentaBright.bold(
+          "Would you like to try to download them again?"
+        ),
+        choices: [
+          {
+            name: "Yes",
+            value: true,
+          },
+          {
+            name: "No",
+            value: false,
+          },
+        ],
+      },
+    ]);
+
+    return userChoice;
+  }
 }
 
 export default Prompt;

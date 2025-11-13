@@ -66,6 +66,8 @@ export interface ComicInfo {
   url: string;
 }
 
+export type DefiniteLogFileContent = Required<LogFileContent>;
+
 export interface ImageInfo {
   index: number;
   url: string;
@@ -83,3 +85,9 @@ export interface LogFileUpdate {
   failedDownloads?: FailedDownloads;
   sourceOfTermination?: SourceOfTermination;
 }
+
+export interface Mode {
+  run: () => Promise<void>;
+}
+
+export type ModeFactoryFn = (shouldRetryFailedDownloads: boolean) => Mode;
