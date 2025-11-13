@@ -25,13 +25,17 @@ export interface Chapter {
 }
 
 export type DownloadableChapter = Chapter & {
-  imageLinks: string[];
+  images: string[];
+};
+
+export type PreparedChapter = Chapter & {
+  images: ImageInfo[];
 };
 
 export interface DownloadInfo {
   url: string;
   title: string;
-  chapters: DownloadableChapter[];
+  chapters: PreparedChapter[];
 }
 
 export interface ProgressInfo {
@@ -51,14 +55,18 @@ export interface DownloadFailed {
 }
 
 export interface LogFileContent {
-  comic: {
-    title: string | undefined;
-    url: string | undefined;
-  };
+  comic?: ComicInfo;
   createdAt: Date;
   failedDownloads: FailedDownloads;
   sourceOfTermination: SourceOfTermination;
 }
+
+export interface ComicInfo {
+  title: string;
+  url: string;
+}
+
+export type DefiniteLogFileContent = Required<LogFileContent>;
 
 export interface ImageInfo {
   index: number;
@@ -77,3 +85,9 @@ export interface LogFileUpdate {
   failedDownloads?: FailedDownloads;
   sourceOfTermination?: SourceOfTermination;
 }
+
+export interface Mode {
+  run: () => Promise<void>;
+}
+
+export type ModeFactoryFn = (shouldRetryFailedDownloads: boolean) => Mode;

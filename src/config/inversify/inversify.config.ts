@@ -5,7 +5,7 @@ import Logger from "../../core/io/Logger";
 import ProgressBar from "../../core/io/progress/ProgressBar";
 import ProgressManager from "../../core/io/progress/ProgressManager";
 import Prompt from "../../core/io/Prompt";
-import { Crawler, CrawlerFactoryFn } from "../../types";
+import { Crawler, CrawlerFactoryFn, Mode, ModeFactoryFn } from "../../types";
 import CONFIG from "../app.config";
 import {
   CHAPTER_PROGRESS_BAR,
@@ -18,6 +18,9 @@ import ErrorHandler from "../../core/error/ErrorHandler";
 import DownloadService from "../../core/download/DownloadService";
 import PreparationService from "../../core/download/PreparationService";
 import LogFile from "../../core/io/LogFile";
+import ModeFactory from "../../core/factories/ModeFactory";
+import DefaultMode from "../../core/modes/DefaultMode";
+import FailedDownloadsMode from "../../core/modes/FailedDownloadsMode";
 
 function setupContainer(): Container {
   const container = new Container();
@@ -85,6 +88,26 @@ function setupContainer(): Container {
     .inSingletonScope();
 
   container.bind<LogFile>(TYPES.LogFile).to(LogFile).inSingletonScope();
+
+  container
+    .bind<ModeFactory>(TYPES.ModeFactory)
+    .to(ModeFactory)
+    .inSingletonScope();
+
+  container.bind<ModeFactoryFn>(TYPES.ModeFactoryFn).toFactory(() => {
+    return (shouldRetryFailedDownloads: boolean) => {
+      if (shouldRetryFailedDownloads) {
+        container
+          .bind<Mode>(TYPES.Mode)
+          .to(FailedDownloadsMode)
+          .inSingletonScope();
+      } else {
+        container.bind<Mode>(TYPES.Mode).to(DefaultMode).inSingletonScope();
+      }
+
+      return container.get<Mode>(TYPES.Mode);
+    };
+  });
 
   return container;
 }

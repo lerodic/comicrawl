@@ -1,11 +1,9 @@
 import "reflect-metadata";
 import Comicrawl from "../src/core/Comicrawl";
-import CrawlerInitializationFailed from "../src/core/error/errors/CrawlerInitializationFailed";
-import PreparationService from "../src/core/download/PreparationService";
-import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
-import DownloadService from "../src/core/download/DownloadService";
 import ErrorHandler from "../src/core/error/ErrorHandler";
 import LogFile from "../src/core/io/LogFile";
+import ModeFactory from "../src/core/factories/ModeFactory";
+import { Mode } from "../src/types";
 
 jest.mock("p-limit", () => {
   return () => {
@@ -15,36 +13,30 @@ jest.mock("p-limit", () => {
 
 describe("Comicrawl", () => {
   let comicrawl: Comicrawl;
-  let mockPreparationService: jest.Mocked<PreparationService>;
-  let mockDownloadService: jest.Mocked<DownloadService>;
+  let mockMode: jest.Mocked<Mode>;
+  let mockModeFactory: jest.Mocked<ModeFactory>;
   let mockErrorHandler: jest.Mocked<ErrorHandler>;
   let mockLogFile: jest.Mocked<LogFile>;
 
   beforeEach(() => {
-    mockPreparationService = {
-      start: jest.fn(),
-    } as unknown as jest.Mocked<PreparationService>;
+    mockMode = {
+      run: jest.fn(),
+    } as unknown as jest.Mocked<Mode>;
 
-    mockDownloadService = {
-      start: jest.fn(),
-    } as unknown as jest.Mocked<DownloadService>;
+    mockModeFactory = {
+      getMode: jest.fn().mockResolvedValue(mockMode),
+    } as unknown as jest.Mocked<ModeFactory>;
 
     mockErrorHandler = {
       handle: jest.fn(),
     } as unknown as jest.Mocked<ErrorHandler>;
 
     mockLogFile = {
-      create: jest.fn(),
-      registerSessionInfo: jest.fn(),
+      init: jest.fn(),
       dump: jest.fn(),
     } as unknown as jest.Mocked<LogFile>;
 
-    comicrawl = new Comicrawl(
-      mockPreparationService,
-      mockDownloadService,
-      mockErrorHandler,
-      mockLogFile
-    );
+    comicrawl = new Comicrawl(mockModeFactory, mockErrorHandler, mockLogFile);
   });
 
   afterEach(() => {
@@ -52,69 +44,17 @@ describe("Comicrawl", () => {
   });
 
   describe("run", () => {
-    it.each([
-      {
-        title: "Comic 1",
-        url: "example.com/comic-1",
-        chapters: [
-          {
-            title: "Chapter 1",
-            url: "example.com/comic-1/chapter-1",
-            imageLinks: ["img1", "img2", "img3"],
-          },
-          {
-            title: "Chapter 2",
-            url: "example.com/comic-1/chapter-2",
-            imageLinks: ["img1", "img2", "img3", "img4"],
-          },
-          {
-            title: "Chapter 3",
-            url: "example.com/comic-1/chapter-3",
-            imageLinks: ["img1", "img2", "img3"],
-          },
-        ],
-      },
-    ])("should execute correctly", async ({ url, title, chapters }) => {
-      mockPreparationService.start.mockResolvedValue({ url, title, chapters });
-
+    it("should execute correctly", async () => {
       await comicrawl.run();
 
-      expect(mockLogFile.create).toHaveBeenCalled();
-      expect(mockLogFile.registerSessionInfo).toHaveBeenCalledWith({
-        url,
-        title,
-      });
-      expect(mockDownloadService.start).toHaveBeenCalledWith(title, chapters);
+      expect(mockMode.run).toHaveBeenCalled();
+      expect(mockLogFile.init).toHaveBeenCalled();
       expect(mockLogFile.dump).toHaveBeenCalledWith("Program");
-    });
-
-    it("should exit early if graphic novel does not contain any chapters", async () => {
-      const error = new EmptyGraphicNovel("Chapterless comic");
-      mockPreparationService.start.mockImplementation(() => {
-        throw error;
-      });
-
-      await comicrawl.run();
-
-      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
-      expect(mockLogFile.dump).toHaveBeenCalledWith("Error");
-    });
-
-    it("should exit early if crawler initialization fails", async () => {
-      const error = new CrawlerInitializationFailed();
-      mockPreparationService.start.mockImplementationOnce(() => {
-        throw error;
-      });
-
-      await comicrawl.run();
-
-      expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
-      expect(mockLogFile.dump).toHaveBeenCalledWith("Error");
     });
 
     it("should terminate correctly on unexpected error", async () => {
       const error = new Error();
-      mockPreparationService.start.mockImplementationOnce(() => {
+      mockMode.run.mockImplementationOnce(() => {
         throw error;
       });
 
@@ -125,7 +65,7 @@ describe("Comicrawl", () => {
     });
 
     it("should correctly listen for SIGINT event and act accordingly", async () => {
-      mockPreparationService.start.mockImplementation((): any => {
+      mockMode.run.mockImplementation((): any => {
         process.emit("SIGINT");
       });
 

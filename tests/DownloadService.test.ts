@@ -58,17 +58,60 @@ describe("DownloadService", () => {
           {
             url: "/chapter-1",
             title: "Chapter 1",
-            imageLinks: ["img1", "img2", "img3"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+            ],
           },
           {
             url: "/chapter-2",
             title: "Chapter 2",
-            imageLinks: ["img1", "img2", "img3", "img4"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+            ],
           },
           {
             url: "/chapter-3",
             title: "Chapter 3",
-            imageLinks: ["img1", "img2", "img3"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+            ],
           },
         ],
       },
@@ -79,22 +122,94 @@ describe("DownloadService", () => {
           {
             url: "/chapter-1",
             title: "Chapter 1",
-            imageLinks: ["img1", "img2", "img3", "img4", "img5"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+              {
+                url: "img5",
+                index: 4,
+              },
+            ],
           },
           {
             url: "/chapter-2",
             title: "Chapter 2",
-            imageLinks: ["img1", "img2", "img3", "img4"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+            ],
           },
           {
             url: "/chapter-3",
             title: "Chapter 3",
-            imageLinks: ["img1", "img2"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+            ],
           },
           {
             url: "/chapter-4",
             title: "Chapter 4",
-            imageLinks: ["img1", "img2", "img3", "img4", "img5", "img6"],
+            images: [
+              {
+                url: "img1",
+                index: 0,
+              },
+              {
+                url: "img2",
+                index: 1,
+              },
+              {
+                url: "img3",
+                index: 2,
+              },
+              {
+                url: "img4",
+                index: 3,
+              },
+              {
+                url: "img5",
+                index: 4,
+              },
+              {
+                url: "img6",
+                index: 5,
+              },
+            ],
           },
         ],
       },
@@ -116,7 +231,7 @@ describe("DownloadService", () => {
 
           expect(mockProgressManager.createChapterBar).toHaveBeenCalledWith(
             chapter.title,
-            chapter.imageLinks.length
+            chapter.images.length
           );
         });
         expect(imageSpy).toHaveBeenCalledTimes(imageCount);
@@ -138,7 +253,7 @@ describe("DownloadService", () => {
       const chapter = {
         title: "Chapter 1",
         url: "example.com/chapter-1",
-        imageLinks: ["/img1"],
+        images: [{ url: "/img1", index: 0 }],
       };
       joinSpy.mockReturnValue("/test/path");
       imageSpy.mockImplementationOnce(async () => {
@@ -150,7 +265,7 @@ describe("DownloadService", () => {
 
       expect(mockLogFile.registerFailedDownload).toHaveBeenCalledWith({
         chapter,
-        image: { url: chapter.imageLinks[0], index: 0 },
+        image: chapter.images[0],
       });
     });
 
@@ -159,7 +274,7 @@ describe("DownloadService", () => {
       const chapter = {
         title: "Chapter 1",
         url: "example.com/chapter-1",
-        imageLinks: ["/img1"],
+        images: [{ url: "/img1", index: 0 }],
       };
       joinSpy.mockReturnValue("/test/path");
       imageSpy.mockImplementationOnce(() => {

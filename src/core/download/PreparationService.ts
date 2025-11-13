@@ -1,11 +1,6 @@
 import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
-import {
-  Chapter,
-  Crawler,
-  DownloadableChapter,
-  DownloadInfo,
-} from "../../types";
+import { Chapter, Crawler, DownloadInfo, PreparedChapter } from "../../types";
 import EmptyGraphicNovel from "../error/errors/EmptyGraphicNovel";
 import { limit } from "../../utils/performance";
 import TYPES from "../../config/inversify/inversify.types";
@@ -106,7 +101,7 @@ class PreparationService {
   private async prepareChaptersForDownload(
     title: string,
     chapters: Chapter[]
-  ): Promise<DownloadableChapter[]> {
+  ): Promise<PreparedChapter[]> {
     this.progress.createPreparationBar(title, chapters.length);
     const crawler = this.crawlerFactory.getCrawler();
 
@@ -117,8 +112,11 @@ class PreparationService {
     }
   }
 
-  private async prepareChapterImages(chapters: Chapter[], crawler: Crawler) {
-    const downloadableChapters = await limit(
+  private async prepareChapterImages(
+    chapters: Chapter[],
+    crawler: Crawler
+  ): Promise<PreparedChapter[]> {
+    const preparedChapters = await limit(
       chapters.map((chapter) => async () => {
         return this.prepareChapter(crawler, chapter);
       })
@@ -126,15 +124,21 @@ class PreparationService {
 
     this.progress.completePreparation();
 
-    return downloadableChapters;
+    return preparedChapters;
   }
 
-  private async prepareChapter(crawler: Crawler, chapter: Chapter) {
-    const imageLinks = await crawler.extractImageLinks(chapter.url);
+  private async prepareChapter(
+    crawler: Crawler,
+    chapter: Chapter
+  ): Promise<PreparedChapter> {
+    const images = await crawler.extractImageLinks(chapter.url);
 
     this.progress.advancePreparation();
 
-    return { ...chapter, imageLinks };
+    return {
+      ...chapter,
+      images: images.map((image, index) => ({ url: image, index })),
+    };
   }
 }
 

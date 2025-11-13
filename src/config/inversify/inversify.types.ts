@@ -14,6 +14,9 @@ const TYPES = {
   PreparationService: Symbol.for("PreparationService"),
   ErrorHandler: Symbol.for("ErrorHandler"),
   LogFile: Symbol.for("LogFile"),
+  Mode: Symbol.for("Mode"),
+  ModeFactory: Symbol.for("ModeFactory"),
+  ModeFactoryFn: Symbol.for("ModeFactoryFn"),
 };
 
 export default TYPES;
