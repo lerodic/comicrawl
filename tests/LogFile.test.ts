@@ -4,7 +4,7 @@ import LogFile from "../src/core/io/LogFile";
 import Logger from "../src/core/io/Logger";
 import fs from "fs/promises";
 import path from "path";
-import { SourceOfTermination } from "../src/types";
+import { LogFileContent, SourceOfTermination } from "../src/types";
 import LogFileCorrupted from "../src/core/error/errors/LogFileCorrupted";
 
 jest.mock("fs/promises");
@@ -281,6 +281,53 @@ describe("LogFile", () => {
       const logFile = new LogFile(mockLogger);
 
       await expect(logFile.read).rejects.toThrow(LogFileCorrupted);
+    });
+  });
+
+  describe("isValid", () => {
+    it.each([
+      {
+        comic: {
+          title: "",
+          url: "",
+        },
+        createdAt: new Date(123),
+        failedDownloads: {},
+        sourceOfTermination: "User",
+      },
+    ])("should return true for valid log file", (content) => {
+      const logFile = new LogFile(mockLogger);
+
+      const result = logFile.isValid(content);
+
+      expect(result).toBe(true);
+    });
+
+    it.each([
+      {},
+      {
+        comic: {},
+      },
+      {
+        comic: {
+          title: "Comic 1",
+          url: 123,
+        },
+      },
+      {
+        comic: {
+          title: "Comic 1",
+          url: "https://example.com/comic-1",
+        },
+        createdAt: new Date(123),
+        failedDownloads: {},
+      },
+    ])("should return false for invalid log file", (content) => {
+      const logFile = new LogFile(mockLogger);
+
+      const result = logFile.isValid(content);
+
+      expect(result).toBe(false);
     });
   });
 });
