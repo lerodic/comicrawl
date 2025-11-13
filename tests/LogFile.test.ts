@@ -291,7 +291,7 @@ describe("LogFile", () => {
           title: "",
           url: "",
         },
-        createdAt: new Date(123),
+        createdAt: new Date(123).toISOString(),
         failedDownloads: {},
         sourceOfTermination: "User",
       },
