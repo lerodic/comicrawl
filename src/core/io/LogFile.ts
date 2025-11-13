@@ -150,7 +150,7 @@ class LogFile {
       content.comic !== undefined &&
       typeof content.comic.title === "string" &&
       typeof content.comic.url === "string" &&
-      typeof content.createdAt === "object" &&
+      typeof content.createdAt === "string" &&
       typeof content.failedDownloads === "object" &&
       typeof content.sourceOfTermination === "string"
     );
