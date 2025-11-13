@@ -8,6 +8,7 @@ import {
   LogFileUpdate,
   SessionStarted,
   SourceOfTermination,
+  DefiniteLogFileContent,
 } from "../../types";
 import path from "path";
 import fs from "fs/promises";
@@ -140,6 +141,19 @@ class LogFile {
         ],
       };
     }, {} as any);
+  }
+
+  isValid(
+    content: any | DefiniteLogFileContent
+  ): content is DefiniteLogFileContent {
+    return (
+      content.comic !== undefined &&
+      typeof content.comic.title === "string" &&
+      typeof content.comic.url === "string" &&
+      typeof content.createdAt === "object" &&
+      typeof content.failedDownloads === "object" &&
+      typeof content.sourceOfTermination === "string"
+    );
   }
 }
 
