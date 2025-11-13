@@ -1,11 +1,10 @@
 import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
 import TYPES from "../config/inversify/inversify.types";
-import DownloadService from "./download/DownloadService";
-import PreparationService from "./download/PreparationService";
 import { SourceOfTermination } from "../types";
 import ErrorHandler from "./error/ErrorHandler";
 import LogFile from "./io/LogFile";
+import ModeFactory from "./factories/ModeFactory";
 
 @boundClass
 @injectable()
@@ -13,21 +12,17 @@ class Comicrawl {
   private hasShutdownBeenInitiated = false;
 
   constructor(
-    @inject(TYPES.PreparationService) private preparation: PreparationService,
-    @inject(TYPES.DownloadService) private download: DownloadService,
+    @inject(TYPES.ModeFactory) private modeFactory: ModeFactory,
     @inject(TYPES.ErrorHandler) private errorHandler: ErrorHandler,
     @inject(TYPES.LogFile) private logFile: LogFile
   ) {}
 
   async run() {
+    await this.init();
+
     try {
-      await this.init();
-
-      const { url, title, chapters } = await this.preparation.start();
-
-      this.logFile.registerSessionInfo({ url, title });
-
-      await this.download.start(title, chapters);
+      const mode = await this.modeFactory.getMode();
+      await mode.run();
 
       await this.shutdown("Program");
     } catch (err: any) {
@@ -36,7 +31,7 @@ class Comicrawl {
   }
 
   private async init() {
-    await this.logFile.create();
+    await this.logFile.init();
 
     process.on("SIGINT", async () => {
       await this.shutdown("User");
