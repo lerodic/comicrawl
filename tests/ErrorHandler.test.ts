@@ -1,6 +1,5 @@
 import ErrorHandler from "../src/core/error/ErrorHandler";
 import ConnectionInterrupted from "../src/core/error/errors/ConnectionInterrupted";
-import CrawlerInitializationFailed from "../src/core/error/errors/CrawlerInitializationFailed";
 import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
 import LogFileCreationFailed from "../src/core/error/errors/LogFileCreationFailed";
 import Logger from "../src/core/io/Logger";
@@ -23,11 +22,6 @@ describe("ErrorHandler", () => {
         type: "EmptyGraphicNovel",
         err: new EmptyGraphicNovel("Title 1"),
         message: "'Title 1' is empty. Aborting.",
-      },
-      {
-        type: "CrawlerInitializationFailed",
-        err: new CrawlerInitializationFailed(),
-        message: "Failed to initialize crawler. Please try again.",
       },
       {
         type: "LogFileCreationFailed",
