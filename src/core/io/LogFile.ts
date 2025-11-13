@@ -2,8 +2,8 @@ import { boundClass } from "autobind-decorator";
 import { inject, injectable } from "inversify";
 import TYPES from "../../config/inversify/inversify.types";
 import {
-  DownloadFailed,
   FailedDownloads,
+  DownloadFailed,
   LogFileContent,
   LogFileUpdate,
   SessionStarted,
@@ -14,10 +14,17 @@ import fs from "fs/promises";
 import Logger from "./Logger";
 import LogFileCreationFailed from "../error/errors/LogFileCreationFailed";
 import LogFileMissing from "../error/errors/LogFileMissing";
+import LogFileCorrupted from "../error/errors/LogFileCorrupted";
 
 @boundClass
 @injectable()
 class LogFile {
+  private DEFAULT_CONTENT: LogFileContent = {
+    createdAt: new Date(Date.now()),
+    failedDownloads: {},
+    sourceOfTermination: "Program",
+  };
+
   constructor(
     @inject(TYPES.Logger) private logger: Logger,
     private _failedDownloads: DownloadFailed[] = []
@@ -27,21 +34,29 @@ class LogFile {
     return [...this._failedDownloads];
   }
 
-  async create() {
+  async init() {
+    if (!(await this.shouldCreateLogFile())) {
+      return;
+    }
+
+    await this.create();
+  }
+
+  private async shouldCreateLogFile(): Promise<boolean> {
+    try {
+      await fs.readFile(this.getFilePath());
+
+      return false;
+    } catch {
+      return true;
+    }
+  }
+
+  private async create() {
     try {
       await this.createLogsFolder();
 
-      const content: LogFileContent = {
-        comic: {
-          title: undefined,
-          url: undefined,
-        },
-        createdAt: new Date(Date.now()),
-        failedDownloads: {},
-        sourceOfTermination: "Program",
-      };
-
-      await this.write(content);
+      await this.write(this.DEFAULT_CONTENT);
     } catch {
       throw new LogFileCreationFailed();
     }
@@ -103,12 +118,16 @@ class LogFile {
     });
   }
 
-  private async read(): Promise<LogFileContent> {
-    const stringified = await fs.readFile(this.getFilePath(), {
-      encoding: "utf-8",
-    });
+  async read(): Promise<LogFileContent> {
+    try {
+      const stringified = await fs.readFile(this.getFilePath(), {
+        encoding: "utf-8",
+      });
 
-    return JSON.parse(stringified);
+      return JSON.parse(stringified);
+    } catch {
+      throw new LogFileCorrupted();
+    }
   }
 
   private groupFailedDownloads(): FailedDownloads {

@@ -55,13 +55,15 @@ export interface DownloadFailed {
 }
 
 export interface LogFileContent {
-  comic: {
-    title: string | undefined;
-    url: string | undefined;
-  };
+  comic?: ComicInfo;
   createdAt: Date;
   failedDownloads: FailedDownloads;
   sourceOfTermination: SourceOfTermination;
+}
+
+export interface ComicInfo {
+  title: string;
+  url: string;
 }
 
 export interface ImageInfo {
