@@ -1,8 +1,9 @@
 import ErrorHandler from "../src/core/error/ErrorHandler";
-import ConnectionInterrupted from "../src/core/error/errors/ConnectionInterrupted";
-import EmptyGraphicNovel from "../src/core/error/errors/EmptyGraphicNovel";
-import LogFileCreationFailed from "../src/core/error/errors/LogFileCreationFailed";
 import Logger from "../src/core/io/Logger";
+import {
+  applicationErrors,
+  networkErrors,
+} from "./fixtures/ErrorHandler.fixtures";
 
 describe("ErrorHandler", () => {
   let errorHandler: ErrorHandler;
@@ -17,19 +18,7 @@ describe("ErrorHandler", () => {
   });
 
   describe("handle", () => {
-    it.each([
-      {
-        type: "EmptyGraphicNovel",
-        err: new EmptyGraphicNovel("Title 1"),
-        message: "'Title 1' is empty. Aborting.",
-      },
-      {
-        type: "LogFileCreationFailed",
-        err: new LogFileCreationFailed(),
-        message:
-          "Failed to create log file. Run Comicrawl again with elevated privileges.",
-      },
-    ])(
+    it.each(applicationErrors)(
       "should log custom error message for error of type: $type",
       ({ err, message }) => {
         errorHandler.handle(err);
@@ -38,20 +27,7 @@ describe("ErrorHandler", () => {
       }
     );
 
-    it.each([
-      {
-        err: new Error("getaddrinfo ENOTFOUND"),
-      },
-      {
-        err: new Error("getaddrinfo ENOTFOUND https://example.com"),
-      },
-      {
-        err: new Error("net::ERR_INTERNET_DISCONNECTED"),
-      },
-      {
-        err: new ConnectionInterrupted(),
-      },
-    ])(
+    it.each(networkErrors)(
       "should handle network-related error with message: '$err.message'",
       async ({ err }) => {
         errorHandler.handle(err);
