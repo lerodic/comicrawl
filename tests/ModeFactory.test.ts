@@ -3,6 +3,10 @@ import ModeFactory from "../src/core/factories/ModeFactory";
 import LogFile from "../src/core/io/LogFile";
 import Prompt from "../src/core/io/Prompt";
 import { DefiniteLogFileContent, Mode, ModeFactoryFn } from "../src/types";
+import {
+  logFileWithErrors,
+  noErrorsLogFileContent,
+} from "./fixtures/ModeFactory.fixtures";
 
 describe("ModeFactory", () => {
   let modeFactory: ModeFactory;
@@ -30,26 +34,7 @@ describe("ModeFactory", () => {
   });
 
   describe("getMode", () => {
-    it.each([
-      {
-        comic: {
-          title: "Comic 1",
-          url: "https://example.com/comic-1",
-        },
-        createdAt: new Date(123),
-        failedDownloads: {},
-        sourceOfTermination: "Program",
-      },
-      {
-        comic: {
-          title: "Comic 2",
-          url: "https://example.com/comic-2",
-        },
-        createdAt: new Date(123),
-        failedDownloads: {},
-        sourceOfTermination: "Error",
-      },
-    ] as DefiniteLogFileContent[])(
+    it.each(noErrorsLogFileContent)(
       "should return an instance of 'DefaultMode' if no failed downloads have been registered",
       async (logFileContent: DefiniteLogFileContent) => {
         mockLogFile.read.mockResolvedValueOnce(logFileContent);
@@ -61,50 +46,7 @@ describe("ModeFactory", () => {
       }
     );
 
-    it.each([
-      {
-        comic: {
-          title: "Comic 1",
-          url: "https://example.com/comic-1",
-        },
-        createdAt: new Date(123),
-        failedDownloads: {
-          "Chapter 1": [
-            {
-              url: "https://example.com/comic-1/chapter-1/img35.png",
-              index: 0,
-            },
-          ],
-        },
-        sourceOfTermination: "Program",
-      },
-      {
-        comic: {
-          title: "Comic 2",
-          url: "https://example.com/comic-2",
-        },
-        createdAt: new Date(123),
-        failedDownloads: {
-          "Chapter 1": [
-            {
-              url: "https://example.com/comic-2/chapter-1/img35.png",
-              index: 0,
-            },
-          ],
-          "Chapter 2": [
-            {
-              url: "https://example.com/comic-2/chapter-2/img1.png",
-              index: 0,
-            },
-            {
-              url: "https://example.com/comic-2/chapter-2/img12.png",
-              index: 12,
-            },
-          ],
-        },
-        sourceOfTermination: "Error",
-      },
-    ] as DefiniteLogFileContent[])(
+    it.each(logFileWithErrors)(
       "should return an instance of 'FailedDownloadsMode' if failed downloads have been tracked and user confirms retry",
       async (logFileContent: DefiniteLogFileContent) => {
         mockLogFile.read.mockResolvedValueOnce(logFileContent);
@@ -117,50 +59,7 @@ describe("ModeFactory", () => {
       }
     );
 
-    it.each([
-      {
-        comic: {
-          title: "Comic 1",
-          url: "https://example.com/comic-1",
-        },
-        createdAt: new Date(123),
-        failedDownloads: {
-          "Chapter 1": [
-            {
-              url: "https://example.com/comic-1/chapter-1/img35.png",
-              index: 0,
-            },
-          ],
-        },
-        sourceOfTermination: "Program",
-      },
-      {
-        comic: {
-          title: "Comic 2",
-          url: "https://example.com/comic-2",
-        },
-        createdAt: new Date(123),
-        failedDownloads: {
-          "Chapter 1": [
-            {
-              url: "https://example.com/comic-2/chapter-1/img35.png",
-              index: 0,
-            },
-          ],
-          "Chapter 2": [
-            {
-              url: "https://example.com/comic-2/chapter-2/img1.png",
-              index: 0,
-            },
-            {
-              url: "https://example.com/comic-2/chapter-2/img12.png",
-              index: 12,
-            },
-          ],
-        },
-        sourceOfTermination: "Program",
-      },
-    ] as DefiniteLogFileContent[])(
+    it.each(logFileWithErrors)(
       "should return an instance of 'DefaultMode' if failed downloads have been tracked but user declines retry",
       async (logFileContent: DefiniteLogFileContent) => {
         mockLogFile.read.mockResolvedValueOnce(logFileContent);

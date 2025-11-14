@@ -6,6 +6,12 @@ import fs from "fs/promises";
 import path from "path";
 import { SourceOfTermination } from "../src/types";
 import LogFileCorrupted from "../src/core/error/errors/LogFileCorrupted";
+import {
+  dumpFixtures,
+  invalidLogFileContentFixtures,
+  registerFailedDownloadFixtures,
+  validLogFileContentFixtures,
+} from "./fixtures/LogFile.fixtures";
 
 jest.mock("fs/promises");
 jest.mock("path");
@@ -78,41 +84,23 @@ describe("LogFile", () => {
   });
 
   describe("registerFailedDownload", () => {
-    it.each([
-      {
-        initial: [
-          {
-            chapter: { title: "Chapter 1", url: "example.com/chapter-1" },
-            image: { index: 20, url: "example.com/chapter-1/20" },
-          },
-        ],
-      },
-      {
-        initial: [
-          {
-            chapter: { title: "Chapter 1", url: "example.com/chapter-1" },
-            image: { index: 20, url: "example.com/chapter-1/20" },
-          },
-          {
-            chapter: { title: "Chapter 1", url: "example.com/chapter-1" },
-            image: { index: 24, url: "example.com/chapter-1/24" },
-          },
-        ],
-      },
-    ])("should register failed download correctly", ({ initial }) => {
-      const failedDownload = {
-        chapter: { title: "Chapter 1", url: "example.com/chapter-1" },
-        image: { index: 100, url: "example.com/chapter-1/100" },
-      };
-      const logFile = new LogFile(mockLogger, [...initial]);
+    it.each(registerFailedDownloadFixtures)(
+      "should register failed download correctly",
+      ({ initial }) => {
+        const failedDownload = {
+          chapter: { title: "Chapter 1", url: "example.com/chapter-1" },
+          image: { index: 100, url: "example.com/chapter-1/100" },
+        };
+        const logFile = new LogFile(mockLogger, [...initial]);
 
-      logFile.registerFailedDownload(failedDownload);
+        logFile.registerFailedDownload(failedDownload);
 
-      expect(logFile.failedDownloads).toStrictEqual([
-        ...initial,
-        failedDownload,
-      ]);
-    });
+        expect(logFile.failedDownloads).toStrictEqual([
+          ...initial,
+          failedDownload,
+        ]);
+      }
+    );
   });
 
   describe("registerSessionInfo", () => {
@@ -161,55 +149,7 @@ describe("LogFile", () => {
   });
 
   describe("dump", () => {
-    it.each([
-      {
-        title: "Comic 1",
-        url: "example.com/comic-1",
-        failedDownloads: [],
-        sourceOfTermination: "User",
-        grouped: {},
-      },
-      {
-        title: "Comic 1",
-        url: "example.com/comic-1",
-        failedDownloads: [
-          {
-            chapter: { title: "Chapter 1", url: "/chapter1" },
-            image: { index: 1, url: "/img1" },
-          },
-        ],
-        sourceOfTermination: "Error",
-        grouped: {
-          "Chapter 1": [{ index: 1, url: "/img1" }],
-        },
-      },
-      {
-        title: "Comic 1",
-        url: "example.com/comic-1",
-        failedDownloads: [
-          {
-            chapter: { title: "Chapter 1", url: "/chapter1" },
-            image: { index: 1, url: "/img1" },
-          },
-          {
-            chapter: { title: "Chapter 1", url: "/chapter1" },
-            image: { index: 10, url: "/img10" },
-          },
-          {
-            chapter: { title: "Chapter 2", url: "/chapter2" },
-            image: { index: 1, url: "/img1" },
-          },
-        ],
-        sourceOfTermination: "Program",
-        grouped: {
-          "Chapter 1": [
-            { index: 1, url: "/img1" },
-            { index: 10, url: "/img10" },
-          ],
-          "Chapter 2": [{ index: 1, url: "/img1" }],
-        },
-      },
-    ])(
+    it.each(dumpFixtures)(
       "should dump finalized version of log file",
       async ({ title, url, failedDownloads, sourceOfTermination, grouped }) => {
         mockJoin.mockReturnValue("/test/log.json");
@@ -285,49 +225,26 @@ describe("LogFile", () => {
   });
 
   describe("isValid", () => {
-    it.each([
-      {
-        comic: {
-          title: "",
-          url: "",
-        },
-        createdAt: new Date(123).toISOString(),
-        failedDownloads: {},
-        sourceOfTermination: "User",
-      },
-    ])("should return true for valid log file", (content) => {
-      const logFile = new LogFile(mockLogger);
+    it.each(validLogFileContentFixtures)(
+      "should return true for valid log file",
+      (content) => {
+        const logFile = new LogFile(mockLogger);
 
-      const result = logFile.isValid(content);
+        const result = logFile.isValid(content);
 
-      expect(result).toBe(true);
-    });
+        expect(result).toBe(true);
+      }
+    );
 
-    it.each([
-      {},
-      {
-        comic: {},
-      },
-      {
-        comic: {
-          title: "Comic 1",
-          url: 123,
-        },
-      },
-      {
-        comic: {
-          title: "Comic 1",
-          url: "https://example.com/comic-1",
-        },
-        createdAt: new Date(123),
-        failedDownloads: {},
-      },
-    ])("should return false for invalid log file", (content) => {
-      const logFile = new LogFile(mockLogger);
+    it.each(invalidLogFileContentFixtures)(
+      "should return false for invalid log file",
+      (content) => {
+        const logFile = new LogFile(mockLogger);
 
-      const result = logFile.isValid(content);
+        const result = logFile.isValid(content);
 
-      expect(result).toBe(false);
-    });
+        expect(result).toBe(false);
+      }
+    );
   });
 });

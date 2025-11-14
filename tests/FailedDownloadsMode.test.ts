@@ -3,6 +3,7 @@ import LogFileCorrupted from "../src/core/error/errors/LogFileCorrupted";
 import LogFile from "../src/core/io/LogFile";
 import FailedDownloadsMode from "../src/core/modes/FailedDownloadsMode";
 import { DefiniteLogFileContent } from "../src/types";
+import { runFixtures } from "./fixtures/FailedDownloadsMode.fixtures";
 
 jest.mock("p-limit", () => {
   return () => {
@@ -35,112 +36,22 @@ describe("FailedDownloadsMode", () => {
   });
 
   describe("run", () => {
-    it.each([
-      {
-        logFileContent: {
-          comic: {
-            title: "Comic 1",
-            url: "https://example.com/comic-1",
-          },
-          createdAt: new Date(123),
-          failedDownloads: {
-            "Chapter 1": [
-              {
-                url: "https://example.com/comic-1/chapter-1/img2.png",
-                index: 1,
-              },
-              {
-                url: "https://example.com/comic-1/chapter-1/img3.png",
-                index: 2,
-              },
-            ],
-          },
-          sourceOfTermination: "Program",
-        },
-        converted: [
-          {
-            title: "Chapter 1",
-            url: "",
-            images: [
-              {
-                url: "https://example.com/comic-1/chapter-1/img2.png",
-                index: 1,
-              },
-              {
-                url: "https://example.com/comic-1/chapter-1/img3.png",
-                index: 2,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        logFileContent: {
-          comic: {
-            title: "Comic 2",
-            url: "https://example.com/comic-2",
-          },
-          createdAt: new Date(123),
-          failedDownloads: {
-            "Chapter 1": [
-              {
-                url: "https://example.com/comic-2/chapter-1/img1.png",
-                index: 0,
-              },
-              {
-                url: "https://example.com/comic-2/chapter-1/img8.png",
-                index: 7,
-              },
-            ],
-            "Chapter 2": [
-              {
-                url: "https://example.com/comic-2/chapter-2/img19.png",
-                index: 19,
-              },
-            ],
-          },
-          sourceOfTermination: "Program",
-        },
-        converted: [
-          {
-            title: "Chapter 1",
-            url: "",
-            images: [
-              {
-                url: "https://example.com/comic-2/chapter-1/img1.png",
-                index: 0,
-              },
-              {
-                url: "https://example.com/comic-2/chapter-1/img8.png",
-                index: 7,
-              },
-            ],
-          },
-          {
-            title: "Chapter 2",
-            url: "",
-            images: [
-              {
-                url: "https://example.com/comic-2/chapter-2/img19.png",
-                index: 19,
-              },
-            ],
-          },
-        ],
-      },
-    ])("should execute correctly", async ({ logFileContent, converted }) => {
-      mockLogFile.read.mockResolvedValueOnce(
-        logFileContent as DefiniteLogFileContent
-      );
-      mockLogFile.isValid.mockReturnValueOnce(true);
+    it.each(runFixtures)(
+      "should execute correctly",
+      async ({ logFileContent, converted }) => {
+        mockLogFile.read.mockResolvedValueOnce(
+          logFileContent as DefiniteLogFileContent
+        );
+        mockLogFile.isValid.mockReturnValueOnce(true);
 
-      await failedDownloadsMode.run();
+        await failedDownloadsMode.run();
 
-      expect(mockDownloadService.start).toHaveBeenCalledWith(
-        logFileContent.comic.title,
-        converted
-      );
-    });
+        expect(mockDownloadService.start).toHaveBeenCalledWith(
+          logFileContent.comic.title,
+          converted
+        );
+      }
+    );
 
     it("should throw 'LogFileCorrupted' if log file is corrupt", async () => {
       mockLogFile.read.mockResolvedValueOnce({} as any);

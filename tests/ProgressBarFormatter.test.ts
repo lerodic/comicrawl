@@ -1,5 +1,6 @@
 import ProgressBarFormatter from "../src/core/io/progress/ProgressBarFormatter";
 import chalk from "chalk";
+import { formatFixtures } from "./fixtures/ProgressBarFormatter.fixtures";
 
 describe("ProgressBarFormatter", () => {
   beforeEach(() => {
@@ -11,87 +12,16 @@ describe("ProgressBarFormatter", () => {
   });
 
   describe("format", () => {
-    it.each([
-      {
-        width: 30,
-        color: chalk.greenBright,
-        progress: {
-          title: "First bar",
-          itemsCompleted: 0,
-          itemsTotal: 20,
-        },
-        expected: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | First bar (0/20)",
-      },
-      {
-        width: 20,
-        color: chalk.greenBright,
-        progress: {
-          title: "Second bar",
-          itemsCompleted: 10,
-          itemsTotal: 30,
-        },
-        expected: "██████░░░░░░░░░░░░░░ 33% | Second bar (10/30)",
-      },
-      {
-        width: 30,
-        color: chalk.blue,
-        progress: {
-          title: "Third bar",
-          itemsCompleted: 28,
-          itemsTotal: 40,
-        },
-        expected: "█████████████████████░░░░░░░░░ 70% | Third bar (28/40)",
-      },
-      {
-        width: 30,
-        color: chalk.blue,
-        progress: {
-          title:
-            "This is a super long and random title to demonstrate truncation capabilities",
-          itemsCompleted: 28,
-          itemsTotal: 40,
-        },
-        expected:
-          "█████████████████████░░░░░░░░░ 70% | This is a super long and ra... (28/40)",
-      },
-      {
-        width: 30,
-        color: chalk.blue,
-        progress: {
-          title: "Short again",
-          itemsCompleted: 39,
-          itemsTotal: 40,
-        },
-        expected: "█████████████████████████████░ 97% | Short again (39/40)",
-      },
-      {
-        width: 30,
-        color: chalk.blue,
-        progress: {
-          title: "Completed",
-          itemsCompleted: 90,
-          itemsTotal: 90,
-        },
-        expected: "██████████████████████████████ 100% | Completed (90/90)",
-      },
-      {
-        width: 30,
-        color: chalk.blue,
-        progress: {
-          title: "Close, but nah",
-          itemsCompleted: 99,
-          itemsTotal: 100,
-        },
-        expected:
-          "█████████████████████████████░ 99% | Close, but nah (99/100)",
-      },
-    ])("should return $expected", ({ width, color, progress, expected }) => {
-      const generateLabel = (_: any) => progress.title;
-      const formatter = new ProgressBarFormatter(width, color, generateLabel);
+    it.each(formatFixtures)(
+      "should return $expected",
+      ({ width, color, progress, expected }) => {
+        const generateLabel = (_: any) => progress.title;
+        const formatter = new ProgressBarFormatter(width, color, generateLabel);
 
-      const result = formatter.format(progress);
+        const result = formatter.format(progress);
 
-      expect(result).toStrictEqual(expected);
-    });
+        expect(result).toStrictEqual(expected);
+      }
+    );
   });
 });

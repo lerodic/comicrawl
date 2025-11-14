@@ -1,6 +1,11 @@
 import "reflect-metadata";
 import ProgressBar from "../src/core/io/progress/ProgressBar";
 import chalk from "chalk";
+import {
+  advanceFixtures,
+  completeFixtures,
+  initFixtures,
+} from "./fixtures/ProgressBar.fixtures";
 
 describe("ProgressBar", () => {
   beforeEach(() => {
@@ -14,24 +19,7 @@ describe("ProgressBar", () => {
   describe("init", () => {
     describe("bars with lineDelta = 0", () => {
       describe("bars with preceding empty lines", () => {
-        it.each([
-          {
-            color: chalk.greenBright,
-            title: "Bar 1",
-            itemsTotal: 20,
-            numEmptyLines: 1,
-            emptyLines: "\n",
-            formattedBar: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Bar 1 (0/20)",
-          },
-          {
-            color: chalk.greenBright,
-            title: "Bar 2",
-            itemsTotal: 268,
-            numEmptyLines: 3,
-            emptyLines: "\n\n\n",
-            formattedBar: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Bar 2 (0/268)",
-          },
-        ])(
+        it.each(initFixtures.withoutLineDelta.withPrecedingEmptyLines)(
           "should init progress bar correctly",
           ({
             color,
@@ -65,20 +53,7 @@ describe("ProgressBar", () => {
       });
 
       describe("bars without preceding empty lines", () => {
-        it.each([
-          {
-            color: chalk.greenBright,
-            title: "Bar 1",
-            itemsTotal: 20,
-            formattedBar: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Bar 1 (0/20)",
-          },
-          {
-            color: chalk.greenBright,
-            title: "Bar 2",
-            itemsTotal: 268,
-            formattedBar: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Bar 2 (0/268)",
-          },
-        ])(
+        it.each(initFixtures.withoutLineDelta.withoutPrecedingEmptyLines)(
           "should init progress bar correctly",
           ({ color, title, itemsTotal, formattedBar }) => {
             const writeSpy = jest
@@ -102,26 +77,7 @@ describe("ProgressBar", () => {
 
     describe("bars with lineDelta > 0", () => {
       describe("bars with preceding empty lines", () => {
-        it.each([
-          {
-            color: chalk.greenBright,
-            title: "Bar 1",
-            lineDelta: 1,
-            itemsTotal: 20,
-            numEmptyLines: 1,
-            emptyLines: "\n",
-            formattedBar: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Bar 1 (0/20)",
-          },
-          {
-            color: chalk.greenBright,
-            title: "Bar 2",
-            lineDelta: 2,
-            itemsTotal: 268,
-            numEmptyLines: 3,
-            emptyLines: "\n\n\n",
-            formattedBar: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Bar 2 (0/268)",
-          },
-        ])(
+        it.each(initFixtures.withLineDelta.withPrecedingEmptyLines)(
           "should init progress bar correctly",
           ({
             color,
@@ -162,22 +118,7 @@ describe("ProgressBar", () => {
       });
 
       describe("bars without preceding empty lines", () => {
-        it.each([
-          {
-            color: chalk.greenBright,
-            title: "Bar 1",
-            lineDelta: 1,
-            itemsTotal: 20,
-            formattedBar: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Bar 1 (0/20)",
-          },
-          {
-            color: chalk.greenBright,
-            title: "Bar 2",
-            lineDelta: 2,
-            itemsTotal: 268,
-            formattedBar: "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% | Bar 2 (0/268)",
-          },
-        ])(
+        it.each(initFixtures.withLineDelta.withoutPrecedingEmptyLines)(
           "should init progress bar correctly",
           ({ color, title, lineDelta, itemsTotal, formattedBar }) => {
             const writeSpy = jest
@@ -212,24 +153,7 @@ describe("ProgressBar", () => {
 
   describe("advance", () => {
     describe("bars with lineDelta = 0", () => {
-      it.each([
-        {
-          color: chalk.greenBright,
-          title: "Bar 1",
-          itemsTotal: 20,
-          initial: 4,
-          expected: 5,
-          formattedBar: "███████░░░░░░░░░░░░░░░░░░░░░░░ 25% | Bar 1 (5/20)",
-        },
-        {
-          color: chalk.greenBright,
-          title: "Bar 2",
-          itemsTotal: 450,
-          initial: 359,
-          expected: 360,
-          formattedBar: "████████████████████████░░░░░░ 80% | Bar 2 (360/450)",
-        },
-      ])(
+      it.each(advanceFixtures.withoutLineDelta)(
         "should advance progress from $initial => $expected",
         ({ color, title, itemsTotal, initial, expected, formattedBar }) => {
           const writeSpy = jest
@@ -259,26 +183,7 @@ describe("ProgressBar", () => {
     });
 
     describe("bars with lineDelta > 0", () => {
-      it.each([
-        {
-          color: chalk.greenBright,
-          title: "Bar 1",
-          lineDelta: 1,
-          itemsTotal: 20,
-          initial: 4,
-          expected: 5,
-          formattedBar: "███████░░░░░░░░░░░░░░░░░░░░░░░ 25% | Bar 1 (5/20)",
-        },
-        {
-          color: chalk.greenBright,
-          title: "Bar 2",
-          lineDelta: 2,
-          itemsTotal: 450,
-          initial: 359,
-          expected: 360,
-          formattedBar: "████████████████████████░░░░░░ 80% | Bar 2 (360/450)",
-        },
-      ])(
+      it.each(advanceFixtures.withLineDelta)(
         "should advance progress from $initial => $expected",
         ({
           color,
@@ -320,22 +225,7 @@ describe("ProgressBar", () => {
 
   describe("complete", () => {
     describe("bars with lineDelta = 0", () => {
-      it.each([
-        {
-          color: chalk.greenBright,
-          title: "Bar 1",
-          itemsTotal: 20,
-          initial: 4,
-          formattedBar: "██████████████████████████████ 100% | Bar 1 (20/20)",
-        },
-        {
-          color: chalk.greenBright,
-          title: "Bar 2",
-          itemsTotal: 450,
-          initial: 359,
-          formattedBar: "██████████████████████████████ 100% | Bar 2 (450/450)",
-        },
-      ])(
+      it.each(completeFixtures.withoutLineDelta)(
         "should complete progress bar",
         ({ color, title, itemsTotal, initial, formattedBar }) => {
           const writeSpy = jest
@@ -365,24 +255,7 @@ describe("ProgressBar", () => {
     });
 
     describe("bars with lineDelta > 0", () => {
-      it.each([
-        {
-          color: chalk.greenBright,
-          title: "Bar 1",
-          lineDelta: 1,
-          itemsTotal: 20,
-          initial: 4,
-          formattedBar: "██████████████████████████████ 100% | Bar 1 (20/20)",
-        },
-        {
-          color: chalk.greenBright,
-          title: "Bar 2",
-          lineDelta: 2,
-          itemsTotal: 450,
-          initial: 359,
-          formattedBar: "██████████████████████████████ 100% | Bar 2 (450/450)",
-        },
-      ])(
+      it.each(completeFixtures.withLineDelta)(
         "should complete progress bar",
         ({ color, title, lineDelta, itemsTotal, initial, formattedBar }) => {
           const writeSpy = jest

@@ -4,6 +4,12 @@ import Logger from "../src/core/io/Logger";
 import inquirer from "inquirer";
 import CONFIG from "../src/config/app.config";
 import { DownloadOption } from "../src/config/constants";
+import {
+  getChaptersEndpointFixtures,
+  getChaptersStartingAtFixtures,
+  getDownloadOptionFixtures,
+  malformattedUrls,
+} from "./fixtures/Prompt.fixtures";
 
 jest.mock("inquirer");
 jest.mock("../src/config/app.config", () => ({
@@ -42,12 +48,7 @@ describe("Prompt", () => {
       }
     );
 
-    it.each([
-      "https://invalid.com",
-      "http://mocked.com",
-      "https://mocked.co",
-      "invalid.com",
-    ])(
+    it.each(malformattedUrls)(
       "should log error if user enters malformatted/unsupported URL: '%s'",
       async (url) => {
         mockInquirer.prompt.mockResolvedValueOnce({ url });
@@ -71,24 +72,7 @@ describe("Prompt", () => {
   });
 
   describe("getDownloadOption", () => {
-    it.each([
-      { title: "Comic 1", itemsTotal: 15, downloadOption: DownloadOption.All },
-      {
-        title: "Comic 2",
-        itemsTotal: 30,
-        downloadOption: DownloadOption.Partial,
-      },
-      {
-        title: "Comic 3",
-        itemsTotal: 120,
-        downloadOption: DownloadOption.Selective,
-      },
-      {
-        title: "Comic 4",
-        itemsTotal: 19,
-        downloadOption: DownloadOption.Range,
-      },
-    ])(
+    it.each(getDownloadOptionFixtures)(
       "should return '$downloadOption'",
       async ({ title, itemsTotal, downloadOption }) => {
         mockInquirer.prompt.mockResolvedValue({ downloadOption });
@@ -105,23 +89,7 @@ describe("Prompt", () => {
   });
 
   describe("getChaptersStartingAt", () => {
-    it.each([
-      {
-        startingPoint: 1,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-        ],
-      },
-      {
-        startingPoint: 2,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-          { title: "3", url: "3" },
-        ],
-      },
-    ])(
+    it.each(getChaptersStartingAtFixtures.validStartingPoint)(
       "should return '$startingPoint' if user enters a valid starting point",
       async ({ startingPoint, chapters }) => {
         mockInquirer.prompt.mockResolvedValueOnce({ startingPoint });
@@ -132,31 +100,7 @@ describe("Prompt", () => {
       }
     );
 
-    it.each([
-      {
-        startingPoint: 0,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-        ],
-      },
-      {
-        startingPoint: 4,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-          { title: "3", url: "3" },
-        ],
-      },
-      {
-        startingPoint: -1,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-          { title: "3", url: "3" },
-        ],
-      },
-    ])(
+    it.each(getChaptersStartingAtFixtures.invalidStartingPointFixtures)(
       "should log error if user enters invalid starting point: '$startingPoint'",
       async ({ startingPoint, chapters }) => {
         mockInquirer.prompt.mockResolvedValueOnce({ startingPoint });
@@ -177,30 +121,7 @@ describe("Prompt", () => {
   });
 
   describe("getChaptersEndpoint", () => {
-    it.each([
-      {
-        startingPoint: 3,
-        endPoint: 5,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-          { title: "3", url: "3" },
-          { title: "4", url: "4" },
-          { title: "5", url: "5" },
-        ],
-      },
-      {
-        startingPoint: 4,
-        endPoint: 5,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-          { title: "3", url: "3" },
-          { title: "4", url: "4" },
-          { title: "5", url: "5" },
-        ],
-      },
-    ])(
+    it.each(getChaptersEndpointFixtures.validEndpoint)(
       "should return '$endPoint' if user enters a valid end point",
       async ({ startingPoint, endPoint, chapters }) => {
         mockInquirer.prompt.mockResolvedValueOnce({ endPoint });
@@ -214,41 +135,7 @@ describe("Prompt", () => {
       }
     );
 
-    it.each([
-      {
-        startingPoint: 3,
-        endPoint: 2,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-          { title: "3", url: "3" },
-          { title: "4", url: "4" },
-          { title: "5", url: "5" },
-        ],
-      },
-      {
-        startingPoint: 3,
-        endPoint: 2,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-          { title: "3", url: "3" },
-          { title: "4", url: "4" },
-          { title: "5", url: "5" },
-        ],
-      },
-      {
-        startingPoint: 3,
-        endPoint: 6,
-        chapters: [
-          { title: "1", url: "1" },
-          { title: "2", url: "2" },
-          { title: "3", url: "3" },
-          { title: "4", url: "4" },
-          { title: "5", url: "5" },
-        ],
-      },
-    ])(
+    it.each(getChaptersEndpointFixtures.invalidEndpoint)(
       "should log error if user enters invalid end point: '$endPoint'",
       async ({ startingPoint, endPoint, chapters }) => {
         mockInquirer.prompt.mockResolvedValueOnce({ endPoint });

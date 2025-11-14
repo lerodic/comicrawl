@@ -4,6 +4,11 @@ import Chromium from "../src/core/crawl/Chromium";
 import { Page } from "puppeteer";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import {
+  extractChaptersFixtures,
+  extractImageLinksFixtures,
+  extractTitleFixtures,
+} from "./fixtures/BatoCrawler.fixtures";
 
 jest.mock("cheerio");
 
@@ -32,16 +37,7 @@ describe("BatoCrawler", () => {
   });
 
   describe("extractTitle", () => {
-    it.each([
-      {
-        url: "https://example.com",
-        title: "First Manga",
-      },
-      {
-        url: "https://another-example.com",
-        title: "Second Manga",
-      },
-    ])(
+    it.each(extractTitleFixtures)(
       "should return title: '$title' for URL: '$url'",
       async ({ url, title }) => {
         jest.spyOn(axios, "get").mockResolvedValue({});
@@ -59,41 +55,28 @@ describe("BatoCrawler", () => {
   });
 
   describe("extractChapters", () => {
-    it.each([
-      {
-        url: "https://test.com",
-        links: [
-          {
-            href: "https://test.com/chapter1",
-            relativeLink: "/chapter1",
-            textContent: "Chapter 1",
-          },
-          {
-            href: "https://test.com/chapter2",
-            relativeLink: "/chapter2",
-            textContent: "Chapter 2",
-          },
-        ],
-      },
-    ])("should extract chapters correctly", async ({ url, links }) => {
-      const chapters = links
-        .map((link) => ({
-          url: link.href,
-          title: link.textContent,
-        }))
-        .reverse();
-      jest.spyOn(axios, "get").mockResolvedValue({});
-      const $ = jest.fn(() => ({
-        map: jest.fn().mockImplementation((cb) => ({
-          get: jest.fn().mockImplementation(() => chapters),
-        })),
-      }));
-      (cheerio.load as jest.Mock).mockReturnValue($);
+    it.each(extractChaptersFixtures)(
+      "should extract chapters correctly",
+      async ({ url, links }) => {
+        const chapters = links
+          .map((link) => ({
+            url: link.href,
+            title: link.textContent,
+          }))
+          .reverse();
+        jest.spyOn(axios, "get").mockResolvedValue({});
+        const $ = jest.fn(() => ({
+          map: jest.fn().mockImplementation((cb) => ({
+            get: jest.fn().mockImplementation(() => chapters),
+          })),
+        }));
+        (cheerio.load as jest.Mock).mockReturnValue($);
 
-      const result = await crawler.extractChapters(url);
+        const result = await crawler.extractChapters(url);
 
-      expect(result).toStrictEqual(chapters);
-    });
+        expect(result).toStrictEqual(chapters);
+      }
+    );
   });
 
   describe("terminate", () => {
@@ -105,29 +88,17 @@ describe("BatoCrawler", () => {
   });
 
   describe("extractImageLinks", () => {
-    it.each([
-      {
-        images: [
-          {
-            src: "https://example.com/chapter-1/image-1",
-          },
-          {
-            src: "https://example.com/chapter-1/image-2",
-          },
-          {
-            src: "https://example.com/chapter-1/image-3",
-          },
-        ],
-        url: "https://example.com",
-      },
-    ])("should extract image links correctly", async ({ url, images }) => {
-      const imageLinks = images.map((image) => image.src);
-      mockPage.$$eval.mockResolvedValueOnce(imageLinks);
+    it.each(extractImageLinksFixtures)(
+      "should extract image links correctly",
+      async ({ url, images }) => {
+        const imageLinks = images.map((image) => image.src);
+        mockPage.$$eval.mockResolvedValueOnce(imageLinks);
 
-      const result = await crawler.extractImageLinks(url);
+        const result = await crawler.extractImageLinks(url);
 
-      expect(result).toStrictEqual(imageLinks);
-      expect(mockPage.close).toHaveBeenCalled();
-    });
+        expect(result).toStrictEqual(imageLinks);
+        expect(mockPage.close).toHaveBeenCalled();
+      }
+    );
   });
 });
