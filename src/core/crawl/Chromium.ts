@@ -75,7 +75,7 @@ class Chromium {
   }
 
   private async launchBundledChromiumInstance() {
-    return puppeteer.launch();
+    return puppeteer.launch(this.DEFAULT_LAUNCH_ARGS);
   }
 
   private async launchCustomChromiumInstance() {
