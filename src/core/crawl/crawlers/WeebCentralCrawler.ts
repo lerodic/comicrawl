@@ -75,7 +75,17 @@ class WeebCentralCrawler implements Crawler {
   }
 
   async extractImageLinks(url: string): Promise<string[]> {
-    return [];
+    const page = await this.chromium.openPage(url, "networkidle0");
+
+    try {
+      return await page.$$eval("img.maw-w-full", (images) => {
+        return images
+          .filter((image) => image.getAttribute("alt")?.startsWith("Page"))
+          .map((image) => image.src);
+      });
+    } finally {
+      await page.close();
+    }
   }
 
   async terminate() {
