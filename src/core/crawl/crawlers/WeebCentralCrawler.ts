@@ -3,6 +3,7 @@ import { inject, injectable } from "inversify";
 import { Chapter, Crawler } from "../../../types";
 import TYPES from "../../../config/inversify/inversify.types";
 import Chromium from "../Chromium";
+import { ElementHandle, Page } from "puppeteer";
 
 @boundClass
 @injectable()
@@ -25,7 +26,52 @@ class WeebCentralCrawler implements Crawler {
   }
 
   async extractChapters(url: string): Promise<Chapter[]> {
-    return [];
+    const page = await this.chromium.openPage(url, "networkidle0");
+
+    try {
+      await this.attemptToLoadAdditionalChapters(page);
+
+      return await this.getAllChapterLinks(page);
+    } finally {
+      await page.close();
+    }
+  }
+
+  private async attemptToLoadAdditionalChapters(page: Page) {
+    const button = await this.getLoadChaptersButton(page);
+    if (button) {
+      await button.click();
+    }
+
+    await page.waitForNetworkIdle({ idleTime: 500, timeout: 5000 });
+  }
+
+  private async getLoadChaptersButton(
+    page: Page
+  ): Promise<ElementHandle<HTMLButtonElement> | undefined> {
+    const buttons = await page.$$("button");
+
+    for (const btn of buttons) {
+      const text = await btn.evaluate(
+        (b) => b.textContent?.toLowerCase() ?? ""
+      );
+      if (text.includes("show all chapters")) {
+        return btn;
+      }
+    }
+  }
+
+  private async getAllChapterLinks(page: Page) {
+    return await page.$$eval("a", (links) => {
+      return links
+        .map((link) => ({
+          url: link.getAttribute("href") ?? "",
+          title: link.querySelector("span span")?.textContent ?? "",
+        }))
+        .filter((link) =>
+          link.url?.startsWith("https://weebcentral.com/chapters")
+        );
+    });
   }
 
   async extractImageLinks(url: string): Promise<string[]> {
