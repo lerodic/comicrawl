@@ -5,7 +5,6 @@ import { SourceOfTermination } from "../types";
 import ErrorHandler from "./error/ErrorHandler";
 import LogFile from "./io/LogFile";
 import ModeFactory from "./factories/ModeFactory";
-import CrawlerInitializationFailed from "./error/errors/CrawlerInitializationFailed";
 
 @boundClass
 @injectable()
@@ -40,24 +39,12 @@ class Comicrawl {
   }
 
   private async handleError(err: any) {
-    if (this.shouldErrorBeIgnored(err)) {
+    if (this.errorHandler.shouldErrorBeIgnored(err)) {
       return this.shutdown("User");
     }
 
     this.errorHandler.handle(err);
     await this.shutdown("Error");
-  }
-
-  private shouldErrorBeIgnored(err: any): boolean {
-    return this.isExitPromptError(err) || this.isCrawlerError(err);
-  }
-
-  private isExitPromptError(err: any): boolean {
-    return err.name === "ExitPromptError";
-  }
-
-  private isCrawlerError(err: any): boolean {
-    return err instanceof CrawlerInitializationFailed;
   }
 
   private async shutdown(sourceOfTermination: SourceOfTermination = "Program") {

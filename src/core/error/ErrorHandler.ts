@@ -5,11 +5,24 @@ import Logger from "../io/Logger";
 import EmptyGraphicNovel from "./errors/EmptyGraphicNovel";
 import LogFileCreationFailed from "./errors/LogFileCreationFailed";
 import ConnectionInterrupted from "./errors/ConnectionInterrupted";
+import CrawlerInitializationFailed from "./errors/CrawlerInitializationFailed";
 
 @boundClass
 @injectable()
 class ErrorHandler {
   constructor(@inject(TYPES.Logger) private logger: Logger) {}
+
+  shouldErrorBeIgnored(err: any): boolean {
+    return this.isExitPromptError(err) || this.isCrawlerError(err);
+  }
+
+  private isExitPromptError(err: any): boolean {
+    return err.name === "ExitPromptError";
+  }
+
+  private isCrawlerError(err: any): boolean {
+    return err instanceof CrawlerInitializationFailed;
+  }
 
   handle(err: any) {
     const message = this.getCorrectErrorMessage(err);
