@@ -4,6 +4,7 @@ import Chromium from "../src/core/crawl/Chromium";
 import { ElementHandle, Page } from "puppeteer";
 import {
   extractTitleFixtures,
+  extractChaptersFixtures,
 } from "./fixtures/Crawler.fixtures";
 
 describe("WeebCentralCrawler", () => {
@@ -46,4 +47,52 @@ describe("WeebCentralCrawler", () => {
       }
     );
   });
+
+  describe("extractChapters", () => {
+    it.each(extractChaptersFixtures)(
+      "should extract all chapters even if not all chapters are present on initial load",
+      async ({ url, links }) => {
+        const mockButton = {
+          evaluate: jest.fn(),
+          click: jest.fn(),
+        } as any;
+        mockPage.$$.mockResolvedValueOnce([mockButton]);
+        mockButton.evaluate.mockResolvedValueOnce("show all chapters");
+        mockPage.$$eval.mockResolvedValueOnce(links);
+
+        const result = await crawler.extractChapters(url);
+
+        expect(mockButton.click).toHaveBeenCalled();
+        expect(mockPage.waitForNetworkIdle).toHaveBeenCalledWith({
+          idleTime: 500,
+          timeout: 5000,
+        });
+        expect(result).toStrictEqual(links);
+      }
+    );
+
+    it.each(extractChaptersFixtures)(
+      "should extract all chapters if all chapters are present on initial load",
+      async ({ url, links }) => {
+        const mockButton = {
+          evaluate: jest.fn(),
+          click: jest.fn(),
+        } as any;
+        mockPage.$$.mockResolvedValueOnce([mockButton]);
+        mockButton.evaluate.mockResolvedValueOnce("nope");
+        mockPage.$$eval.mockResolvedValueOnce(links);
+
+        const result = await crawler.extractChapters(url);
+
+        expect(result).toStrictEqual(links);
+        expect(mockButton.click).not.toHaveBeenCalled();
+        expect(mockPage.waitForNetworkIdle).toHaveBeenCalledWith({
+          idleTime: 500,
+          timeout: 5000,
+        });
+        expect(mockPage.close).toHaveBeenCalled();
+      }
+    );
+  });
+
 });
