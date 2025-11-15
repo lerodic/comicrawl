@@ -4,6 +4,7 @@ import ErrorHandler from "../src/core/error/ErrorHandler";
 import LogFile from "../src/core/io/LogFile";
 import ModeFactory from "../src/core/factories/ModeFactory";
 import { Mode } from "../src/types";
+import CrawlerInitializationFailed from "../src/core/error/errors/CrawlerInitializationFailed";
 
 jest.mock("p-limit", () => {
   return () => {
@@ -29,6 +30,7 @@ describe("Comicrawl", () => {
 
     mockErrorHandler = {
       handle: jest.fn(),
+      shouldErrorBeIgnored: jest.fn(),
     } as unknown as jest.Mocked<ErrorHandler>;
 
     mockLogFile = {
@@ -57,11 +59,25 @@ describe("Comicrawl", () => {
       mockMode.run.mockImplementationOnce(() => {
         throw error;
       });
+      mockErrorHandler.shouldErrorBeIgnored.mockReturnValueOnce(false);
 
       await comicrawl.run();
 
       expect(mockErrorHandler.handle).toHaveBeenCalledWith(error);
       expect(mockLogFile.dump).toHaveBeenCalledWith("Error");
+    });
+
+    it("should terminate correctly on error that can be safely ignored", async () => {
+      const error = new CrawlerInitializationFailed();
+      mockMode.run.mockImplementationOnce(() => {
+        throw error;
+      });
+      mockErrorHandler.shouldErrorBeIgnored.mockReturnValueOnce(true);
+
+      await comicrawl.run();
+
+      expect(mockErrorHandler.handle).not.toHaveBeenCalled();
+      expect(mockLogFile.dump).toHaveBeenCalledWith("User");
     });
 
     it("should correctly listen for SIGINT event and act accordingly", async () => {
