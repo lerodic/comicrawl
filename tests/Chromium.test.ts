@@ -2,10 +2,18 @@ import "reflect-metadata";
 import Chromium from "../src/core/crawl/Chromium";
 import MissingChromiumInstance from "../src/core/error/errors/MissingChromiumInstance";
 import CONFIG from "../src/config/app.config";
-import puppeteer, { Browser, Page } from "puppeteer";
+import { Browser, Page } from "puppeteer";
+import puppeteer from "puppeteer-extra";
 import { PuppeteerBlocker } from "@ghostery/adblocker-puppeteer";
 
 jest.mock("puppeteer");
+jest.mock("puppeteer-extra");
+jest.mock("puppeteer-extra-plugin-stealth", () => {
+  return {
+    __esModule: true,
+    default: jest.fn(() => "stealth-plugin-mock"),
+  };
+});
 jest.mock("cross-fetch", () => jest.fn());
 jest.mock("@ghostery/adblocker-puppeteer", () => ({
   PuppeteerBlocker: {
@@ -104,6 +112,8 @@ describe("Chromium", () => {
 
         expect(mockPuppeteer.launch).toHaveBeenCalledWith({
           executablePath: CONFIG.EXECUTABLE_PATH,
+          headless: true,
+          args: ["--window-size=1280, 720"],
         });
         expect(result).toStrictEqual(mockPage);
       }
