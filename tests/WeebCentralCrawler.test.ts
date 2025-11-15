@@ -5,6 +5,7 @@ import { ElementHandle, Page } from "puppeteer";
 import {
   extractTitleFixtures,
   extractChaptersFixtures,
+  extractImageLinksFixtures,
 } from "./fixtures/Crawler.fixtures";
 
 describe("WeebCentralCrawler", () => {
@@ -95,4 +96,25 @@ describe("WeebCentralCrawler", () => {
     );
   });
 
+  describe("extractImageLinks", () => {
+    it.each(extractImageLinksFixtures)(
+      "should correctly extract all image links",
+      async ({ url, images }) => {
+        mockPage.$$eval.mockResolvedValueOnce(images);
+
+        const result = await crawler.extractImageLinks(url);
+
+        expect(result).toStrictEqual(images);
+        expect(mockPage.close).toHaveBeenCalled();
+      }
+    );
+  });
+
+  describe("terminate", () => {
+    it("should delegate to 'Chromium' instance for application shutdown", async () => {
+      await crawler.terminate();
+
+      expect(mockChromium.terminate).toHaveBeenCalled();
+    });
+  });
 });
