@@ -8,6 +8,11 @@ import { PuppeteerBlocker } from "@ghostery/adblocker-puppeteer";
 @boundClass
 @injectable()
 class Chromium {
+  private DEFAULT_LAUNCH_ARGS = {
+    headless: true,
+    args: ["--window-size=1280, 720"],
+  };
+
   private browserLaunchPromise: Promise<Browser> | undefined = undefined;
   private browser: Browser | undefined = undefined;
   private blocker: PuppeteerBlocker | undefined = undefined;
@@ -75,7 +80,10 @@ class Chromium {
 
   private async launchCustomChromiumInstance() {
     try {
-      return puppeteer.launch({ executablePath: CONFIG.EXECUTABLE_PATH });
+      return puppeteer.launch({
+        ...this.DEFAULT_LAUNCH_ARGS,
+        executablePath: CONFIG.EXECUTABLE_PATH,
+      });
     } catch {
       throw new MissingChromiumInstance(CONFIG.EXECUTABLE_PATH!);
     }
