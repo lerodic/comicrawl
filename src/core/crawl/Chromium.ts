@@ -1,9 +1,11 @@
 import { boundClass } from "autobind-decorator";
 import { injectable } from "inversify";
-import puppeteer, { Browser, PuppeteerLifeCycleEvent } from "puppeteer";
+import puppeteer from "puppeteer-extra";
+import { Browser, PuppeteerLifeCycleEvent } from "puppeteer";
 import CONFIG from "../../config/app.config";
 import MissingChromiumInstance from "../error/errors/MissingChromiumInstance";
 import { PuppeteerBlocker } from "@ghostery/adblocker-puppeteer";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 
 @boundClass
 @injectable()
@@ -21,6 +23,7 @@ class Chromium {
     url: string,
     waitUntil: PuppeteerLifeCycleEvent = "domcontentloaded"
   ) {
+    puppeteer.use(StealthPlugin());
     const page = await this.setupPage();
 
     await page.goto(url, {
