@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import WeebCentralCrawler from "../src/core/crawl/crawlers/WeebCentralCrawler";
 import Chromium from "../src/core/crawl/Chromium";
-import { ElementHandle, Page } from "puppeteer";
+import { Page } from "puppeteer";
 import {
   extractTitleFixtures,
   extractChaptersFixtures,

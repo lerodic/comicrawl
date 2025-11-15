@@ -3,7 +3,6 @@ import Prompt from "../src/core/io/Prompt";
 import Logger from "../src/core/io/Logger";
 import inquirer from "inquirer";
 import CONFIG from "../src/config/app.config";
-import { DownloadOption } from "../src/config/constants";
 import {
   getChaptersEndpointFixtures,
   getChaptersStartingAtFixtures,
