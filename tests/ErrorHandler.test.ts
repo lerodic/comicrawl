@@ -1,4 +1,6 @@
 import ErrorHandler from "../src/core/error/ErrorHandler";
+import ConnectionInterrupted from "../src/core/error/errors/ConnectionInterrupted";
+import CrawlerInitializationFailed from "../src/core/error/errors/CrawlerInitializationFailed";
 import Logger from "../src/core/io/Logger";
 import {
   applicationErrors,
@@ -15,6 +17,38 @@ describe("ErrorHandler", () => {
     } as unknown as jest.Mocked<Logger>;
 
     errorHandler = new ErrorHandler(mockLogger);
+  });
+
+  describe("shouldErrorBeIgnored", () => {
+    it.each([
+      {
+        expected: true,
+        err: { name: "ExitPromptError" },
+        type: "ExitPromptError",
+      },
+      {
+        expected: true,
+        err: new CrawlerInitializationFailed(),
+        type: "CrawlerInitializationFailed",
+      },
+      {
+        expected: false,
+        err: new Error(),
+        type: "Error",
+      },
+      {
+        expected: false,
+        err: new ConnectionInterrupted(),
+        type: "ConnectionInterrupted",
+      },
+    ])(
+      "should return $expected for error of type: $type",
+      ({ expected, err }) => {
+        const result = errorHandler.shouldErrorBeIgnored(err);
+
+        expect(result).toBe(expected);
+      }
+    );
   });
 
   describe("handle", () => {
