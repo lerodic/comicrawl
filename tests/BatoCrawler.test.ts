@@ -8,7 +8,7 @@ import {
   extractChaptersFixtures,
   extractImageLinksFixtures,
   extractTitleFixtures,
-} from "./fixtures/BatoCrawler.fixtures";
+} from "./fixtures/Crawler.fixtures";
 
 jest.mock("cheerio");
 

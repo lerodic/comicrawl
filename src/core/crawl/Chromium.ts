@@ -1,13 +1,20 @@
 import { boundClass } from "autobind-decorator";
 import { injectable } from "inversify";
-import puppeteer, { Browser, PuppeteerLifeCycleEvent } from "puppeteer";
+import puppeteer from "puppeteer-extra";
+import { Browser, PuppeteerLifeCycleEvent } from "puppeteer";
 import CONFIG from "../../config/app.config";
 import MissingChromiumInstance from "../error/errors/MissingChromiumInstance";
 import { PuppeteerBlocker } from "@ghostery/adblocker-puppeteer";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 
 @boundClass
 @injectable()
 class Chromium {
+  private DEFAULT_LAUNCH_ARGS = {
+    headless: true,
+    args: ["--window-size=1280, 720"],
+  };
+
   private browserLaunchPromise: Promise<Browser> | undefined = undefined;
   private browser: Browser | undefined = undefined;
   private blocker: PuppeteerBlocker | undefined = undefined;
@@ -16,6 +23,7 @@ class Chromium {
     url: string,
     waitUntil: PuppeteerLifeCycleEvent = "domcontentloaded"
   ) {
+    puppeteer.use(StealthPlugin());
     const page = await this.setupPage();
 
     await page.goto(url, {
@@ -70,12 +78,15 @@ class Chromium {
   }
 
   private async launchBundledChromiumInstance() {
-    return puppeteer.launch();
+    return puppeteer.launch(this.DEFAULT_LAUNCH_ARGS);
   }
 
   private async launchCustomChromiumInstance() {
     try {
-      return puppeteer.launch({ executablePath: CONFIG.EXECUTABLE_PATH });
+      return puppeteer.launch({
+        ...this.DEFAULT_LAUNCH_ARGS,
+        executablePath: CONFIG.EXECUTABLE_PATH,
+      });
     } catch {
       throw new MissingChromiumInstance(CONFIG.EXECUTABLE_PATH!);
     }

@@ -1,7 +1,7 @@
 import { Newable } from "inversify";
 import { DOWNLOAD_OPTIONS } from "./config/constants";
 
-export type SupportedHost = "Bato";
+export type SupportedHost = "Bato" | "WeebCentral";
 
 export interface HostInfo {
   domains: string[];

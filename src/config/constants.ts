@@ -2,6 +2,7 @@ import chalk from "chalk";
 import BatoCrawler from "../core/crawl/crawlers/BatoCrawler";
 import ProgressBar from "../core/io/progress/ProgressBar";
 import { DomainMap, HostInfo, SupportedHost } from "../types";
+import WeebCentralCrawler from "../core/crawl/crawlers/WeebCentralCrawler";
 
 function createDomainMap(): DomainMap {
   const domainMap = new Map<SupportedHost, HostInfo>();
@@ -9,6 +10,11 @@ function createDomainMap(): DomainMap {
   domainMap.set("Bato", {
     domains: ["https://bato.to", "https://xbato.com"],
     class: BatoCrawler,
+  });
+
+  domainMap.set("WeebCentral", {
+    domains: ["https://weebcentral.com"],
+    class: WeebCentralCrawler,
   });
 
   return domainMap;
