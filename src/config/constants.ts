@@ -55,15 +55,15 @@ export const DOWNLOAD_OPTIONS = Object.values(DownloadOption)
 function getDownloadOptionName(downloadOption: DownloadOption): string {
   switch (downloadOption) {
     case DownloadOption.All:
-      return "...all chapters";
+      return "all chapters";
     case DownloadOption.Partial:
-      return `...all chapters, starting at ${chalk.magentaBright.bold("[x]")}`;
+      return `all chapters, starting at ${chalk.magentaBright.bold("[x]")}`;
     case DownloadOption.Range:
-      return `...all chapters in between ${chalk.magentaBright.bold(
+      return `all chapters in between ${chalk.magentaBright.bold(
         "[x]"
       )} and ${chalk.magentaBright.bold("[y]")}`;
     case DownloadOption.Selective:
-      return "...a selection of chapters";
+      return "a selection of chapters";
   }
 }
 
