@@ -21,6 +21,10 @@ import LogFileCorrupted from "../error/errors/LogFileCorrupted";
 @injectable()
 class LogFile {
   private DEFAULT_CONTENT: LogFileContent = {
+    comic: {
+      title: "Untitled",
+      url: "",
+    },
     createdAt: new Date(Date.now()),
     failedDownloads: {},
     sourceOfTermination: "Program",
