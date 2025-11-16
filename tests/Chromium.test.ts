@@ -23,7 +23,7 @@ jest.mock("@ghostery/adblocker-puppeteer", () => ({
 jest.mock("../src/config/app.config", () => ({
   __esModule: true,
   default: {
-    SUPPORTED_DOMAINS: ["https://mocked.com", "https://mocked2.com"],
+    SUPPORTED_ORIGINS: ["https://mocked.com", "https://mocked2.com"],
     EXECUTABLE_PATH: "/mocked/path",
   },
 }));
@@ -60,7 +60,7 @@ describe("Chromium", () => {
   afterEach(() => {
     jest.clearAllMocks();
 
-    CONFIG.SUPPORTED_DOMAINS = [
+    CONFIG.SUPPORTED_ORIGINS = [
       "https://mocked.com",
       "https://another-mocked.com",
     ];
