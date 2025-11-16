@@ -56,6 +56,10 @@ describe("LogFile", () => {
         { encoding: "utf-8" }
       );
       expect(mockStringify).toHaveBeenCalledWith({
+        comic: {
+          title: "Untitled",
+          url: "",
+        },
         createdAt: new Date(12345),
         failedDownloads: {},
         sourceOfTermination: "Program",
