@@ -37,7 +37,7 @@ class Prompt {
 
   private handleUrlRetrievalError() {
     this.logger.error(
-      "\nPlease enter a valid URL. Below is a list of valid domains:\n"
+      "\nPlease enter a valid URL. Below is a list of valid origins:\n"
     );
 
     CONFIG.SUPPORTED_ORIGINS.forEach((origin) => {
