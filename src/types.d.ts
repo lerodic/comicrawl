@@ -1,14 +1,14 @@
 import { Newable } from "inversify";
 import { DOWNLOAD_OPTIONS } from "./config/constants";
 
-export type SupportedHost = "Bato" | "WeebCentral";
+export type SupportedSource = "Bato" | "WeebCentral";
 
-export interface HostInfo {
-  domains: string[];
+export interface SourceInfo {
+  origins: string[];
   class: Newable<Crawler>;
 }
 
-export type DomainMap = Map<SupportedHost, HostInfo>;
+export type SourceMap = Map<SupportedSource, SourceInfo>;
 
 export interface Crawler {
   extractTitle(url: string): Promise<string>;
