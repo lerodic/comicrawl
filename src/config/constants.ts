@@ -1,38 +1,38 @@
 import chalk from "chalk";
 import BatoCrawler from "../core/crawl/crawlers/BatoCrawler";
 import ProgressBar from "../core/io/progress/ProgressBar";
-import { DomainMap, HostInfo, SupportedHost } from "../types";
+import { SourceMap, SourceInfo, SupportedSource } from "../types";
 import WeebCentralCrawler from "../core/crawl/crawlers/WeebCentralCrawler";
 
-function createDomainMap(): DomainMap {
-  const domainMap = new Map<SupportedHost, HostInfo>();
+function createSourceMap(): SourceMap {
+  const sourceMap = new Map<SupportedSource, SourceInfo>();
 
-  domainMap.set("Bato", {
-    domains: ["https://bato.to", "https://xbato.com"],
+  sourceMap.set("Bato", {
+    origins: ["https://bato.to", "https://xbato.com"],
     class: BatoCrawler,
   });
 
-  domainMap.set("WeebCentral", {
-    domains: ["https://weebcentral.com"],
+  sourceMap.set("WeebCentral", {
+    origins: ["https://weebcentral.com"],
     class: WeebCentralCrawler,
   });
 
-  return domainMap;
+  return sourceMap;
 }
 
-function extractSupportedDomains(map: DomainMap): string[] {
-  const supportedDomains: string[] = [];
+function extractSupportedOrigins(map: SourceMap): string[] {
+  const supportedOrigins: string[] = [];
 
   for (const value of map.values()) {
-    supportedDomains.push(...value.domains);
+    supportedOrigins.push(...value.origins);
   }
 
-  return supportedDomains;
+  return supportedOrigins;
 }
 
-export const DOMAIN_MAP = createDomainMap();
+export const SOURCE_MAP = createSourceMap();
 
-export const SUPPORTED_DOMAINS = extractSupportedDomains(DOMAIN_MAP);
+export const SUPPORTED_ORIGINS = extractSupportedOrigins(SOURCE_MAP);
 
 export enum DownloadOption {
   All,

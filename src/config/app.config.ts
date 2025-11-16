@@ -1,8 +1,8 @@
-import { DOMAIN_MAP, SUPPORTED_DOMAINS } from "./constants";
+import { SOURCE_MAP, SUPPORTED_ORIGINS } from "./constants";
 
 const CONFIG = {
-  DOMAIN_MAP,
-  SUPPORTED_DOMAINS,
+  SOURCE_MAP,
+  SUPPORTED_ORIGINS,
   EXECUTABLE_PATH: process.env.EXECUTABLE_PATH ?? undefined,
 };
 
