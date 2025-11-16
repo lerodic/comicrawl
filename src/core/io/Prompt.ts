@@ -31,7 +31,7 @@ class Prompt {
   private isValidUrl(url: string): boolean {
     return (
       isURL(url) &&
-      CONFIG.SUPPORTED_DOMAINS.some((domain) => url.startsWith(domain))
+      CONFIG.SUPPORTED_ORIGINS.some((origin) => url.startsWith(origin))
     );
   }
 
@@ -40,8 +40,8 @@ class Prompt {
       "\nPlease enter a valid URL. Below is a list of valid domains:\n"
     );
 
-    CONFIG.SUPPORTED_DOMAINS.forEach((domain) => {
-      this.logger.info(`- ${domain}\n`);
+    CONFIG.SUPPORTED_ORIGINS.forEach((origin) => {
+      this.logger.info(`- ${origin}\n`);
     });
 
     return this.getUrl();
