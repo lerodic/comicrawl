@@ -35,15 +35,16 @@ cd comicrawl
 npm install
 ```
 
-You can now build and run the project.  
-Alternatively, you can skip the build step and run it directly.
+3. Link `comicrawl` executable
 
 ```bash
-# build and run
-npm run build && npm run start
+npm run build && npm link
+```
 
-# run directly
-npm run dev
+4. Run the program via the `comicrawl` command
+
+```bash
+comicrawl
 ```
 
 ## Supporting additional sources

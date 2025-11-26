@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "comicrawl": "./dist/main.js"
+  },
   "scripts": {
     "dev": "tsc && npm run start",
     "build": "tsc",

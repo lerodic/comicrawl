@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import "reflect-metadata";
 import ComicrawlFactory from "./core/factories/ComicrawlFactory";
 
