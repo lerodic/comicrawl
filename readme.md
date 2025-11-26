@@ -59,7 +59,7 @@ interface Crawler {
 }
 ```
 
-Crawlers reside in `src/crawl/crawlers` and need to be registered for automatic dependency resolution. You can do so in just two simple steps.
+Crawlers reside in `src/core/crawl/crawlers` and need to be registered for automatic dependency resolution. You can do so in just two simple steps.
 
 1. You need to expand the `SupportedSource` type in `src/types.d.ts`:
 
