@@ -69,7 +69,7 @@ Crawlers reside in `src/crawl/crawlers` and need to be registered for automatic 
 export type SupportedSource = "Bato" | "WeebCentral" | "NewSource";
 ```
 
-2. You need to map any and all origins that you want to associate with your new crawler to that very crawler.  
+2. You must link all desired origins to your new crawler.  
    You can do that by expanding the `SOURCE_MAP` constant located in `src/config/constants.ts` by adding a new key/value pair to `sourceMap` as outlined below.
 
 ```ts
@@ -94,12 +94,12 @@ function createSourceMap(): SourceMap {
     class: NewSourceCrawler,
   });
 
-  return domainMap;
+  return sourceMap;
 }
 ```
 
 ## Creating comic book archives
 
 Comicrawl creates a folder for each new comic/manga inside of `/comics`.  
-It then creates an additional folder for each chapter, and stores all of that chapter’s images inside of it.  
+It then creates an additional folder for each chapter and stores all of that chapter’s images inside of it.  
 You still need to manually add individual chapter folders to a `.cbz` or `.cbr` archive to allow common comic/manga readers to open them.
