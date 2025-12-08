@@ -9,8 +9,6 @@ export interface Source {
   class: Newable<Crawler>;
 }
 
-export type SourceMap = Map<SupportedSource, SourceInfo>;
-
 export interface Crawler {
   extractTitle(url: string): Promise<string>;
   extractChapters(url: string): Promise<Chapter[]>;
