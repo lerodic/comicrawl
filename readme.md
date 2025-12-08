@@ -71,32 +71,29 @@ export type SupportedSource = "Bato" | "WeebCentral" | "NewSource";
 ```
 
 2. You must link all desired origins to your new crawler.  
-   You can do that by expanding the `SOURCE_MAP` constant located in `src/config/constants.ts` by adding a new key/value pair to `sourceMap` as outlined below.
+   You can do that by expanding the `SOURCES` constant located in `src/config/constants.ts` by adding a new entry as outlined below.
 
 ```ts
 // constants.ts
 
-function createSourceMap(): SourceMap {
-  const sourceMap = new Map<SupportedSource, SourceInfo>();
-
-  sourceMap.set("Bato", {
+export const SOURCES: Source[] = [
+  {
+    id: "Bato",
     origins: ["https://bato.to", "https://xbato.com"],
     class: BatoCrawler,
-  });
-
-  sourceMap.set("WeebCentral", {
+  },
+  {
+    id: "WeebCentral",
     origins: ["https://weebcentral.com"],
     class: WeebCentralCrawler,
-  });
-
-  // add a mapping for the new source
-  sourceMap.set("NewSource", {
+  },
+  // add new source
+  {
+    id: "NewSource",
     origins: ["https://newsource.com"],
     class: NewSourceCrawler,
-  });
-
-  return sourceMap;
-}
+  },
+];
 ```
 
 ## Creating comic book archives
