@@ -59,7 +59,7 @@ describe("Prompt", () => {
         const result = await prompt.getUrl();
 
         expect(mockLogger.error).toHaveBeenCalledWith(
-          "\nPlease enter a valid URL. Below is a list of valid domains:\n"
+          "\nPlease enter a valid URL. Below is a list of valid origins:\n"
         );
         expect(mockLogger.info).toHaveBeenCalledTimes(
           mockedConfig.SUPPORTED_ORIGINS.length

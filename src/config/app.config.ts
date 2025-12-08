@@ -1,7 +1,7 @@
-import { SOURCE_MAP, SUPPORTED_ORIGINS } from "./constants";
+import { SOURCES, SUPPORTED_ORIGINS } from "./constants";
 
 const CONFIG = {
-  SOURCE_MAP,
+  SOURCES,
   SUPPORTED_ORIGINS,
   EXECUTABLE_PATH: process.env.EXECUTABLE_PATH ?? undefined,
 };

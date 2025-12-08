@@ -3,7 +3,8 @@ import { DOWNLOAD_OPTIONS } from "./config/constants";
 
 export type SupportedSource = "Bato" | "WeebCentral";
 
-export interface SourceInfo {
+export interface Source {
+  id: SupportedSource;
   origins: string[];
   class: Newable<Crawler>;
 }

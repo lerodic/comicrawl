@@ -1,38 +1,27 @@
 import chalk from "chalk";
 import BatoCrawler from "../core/crawl/crawlers/BatoCrawler";
 import ProgressBar from "../core/io/progress/ProgressBar";
-import { SourceMap, SourceInfo, SupportedSource } from "../types";
+import { Source } from "../types";
 import WeebCentralCrawler from "../core/crawl/crawlers/WeebCentralCrawler";
 
-function createSourceMap(): SourceMap {
-  const sourceMap = new Map<SupportedSource, SourceInfo>();
-
-  sourceMap.set("Bato", {
+export const SOURCES: Source[] = [
+  {
+    id: "Bato",
     origins: ["https://bato.to", "https://xbato.com"],
     class: BatoCrawler,
-  });
-
-  sourceMap.set("WeebCentral", {
+  },
+  {
+    id: "WeebCentral",
     origins: ["https://weebcentral.com"],
     class: WeebCentralCrawler,
-  });
+  },
+];
 
-  return sourceMap;
+export const SUPPORTED_ORIGINS = extractSupportedOrigins(SOURCES);
+
+function extractSupportedOrigins(sources: Source[]): string[] {
+  return sources.map((source) => source.origins).flat();
 }
-
-function extractSupportedOrigins(map: SourceMap): string[] {
-  const supportedOrigins: string[] = [];
-
-  for (const value of map.values()) {
-    supportedOrigins.push(...value.origins);
-  }
-
-  return supportedOrigins;
-}
-
-export const SOURCE_MAP = createSourceMap();
-
-export const SUPPORTED_ORIGINS = extractSupportedOrigins(SOURCE_MAP);
 
 export enum DownloadOption {
   All,
