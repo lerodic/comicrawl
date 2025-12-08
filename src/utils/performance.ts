@@ -10,8 +10,7 @@ const memoryConsumerMapping = {
 };
 
 function getConcurrencyLevel(): number {
-  const totalMemory = os.totalmem();
-  const totalMemoryInGb = totalMemory / Math.pow(1024, 3);
+  const totalMemoryInGb = os.totalmem() / Math.pow(1024, 3);
 
   for (const [memory, consumers] of Object.entries(memoryConsumerMapping)) {
     if (totalMemoryInGb >= +memory) {
