@@ -38,11 +38,11 @@ function setupContainer(): Container {
 
   container.bind<CrawlerFactoryFn>(TYPES.CrawlerFactoryFn).toFactory(() => {
     return (url: string) => {
-      for (const [_, sourceInfo] of CONFIG.SOURCE_MAP) {
-        if (sourceInfo.origins.some((origin) => url.startsWith(origin))) {
+      for (const source of CONFIG.SOURCES) {
+        if (source.origins.some((origin) => url.startsWith(origin))) {
           container
             .bind<Crawler>(TYPES.Crawler)
-            .to(sourceInfo.class)
+            .to(source.class)
             .inSingletonScope();
 
           break;
