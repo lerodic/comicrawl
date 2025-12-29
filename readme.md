@@ -99,5 +99,5 @@ export const SOURCES: Source[] = [
 ## Creating comic book archives
 
 Comicrawl creates a folder for each new comic/manga inside of `/comics`.  
-It then creates an additional folder for each chapter and stores all of that chapter’s images inside of it.  
+It then creates a subfolder for each chapter and stores all of that chapter’s images inside of it.  
 You still need to manually add individual chapter folders to a `.cbz` or `.cbr` archive to allow common comic/manga readers to open them.
