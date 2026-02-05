@@ -1,26 +1,16 @@
 import os from "os";
 import pLimit from "p-limit";
 
-const memoryConsumerMapping = {
-  8: 1,
-  16: 2,
-  32: 5,
-  64: 10,
-  128: 15,
-};
-
 function getConcurrencyLevel(): number {
   const totalMemoryInGb = os.totalmem() / Math.pow(1024, 3);
 
-  for (const [memory, consumers] of Object.entries(memoryConsumerMapping)) {
-    if (totalMemoryInGb >= +memory) {
-      continue;
-    }
-
-    return consumers;
+  if (totalMemoryInGb >= 16) {
+    return 5;
+  } else if (totalMemoryInGb >= 8) {
+    return 2;
+  } else {
+    return 1;
   }
-
-  return 20;
 }
 
 export async function limit<T>(tasks: (() => Promise<T>)[]): Promise<T[]> {
