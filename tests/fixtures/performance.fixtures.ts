@@ -25,7 +25,7 @@ export const limitFixtures = [
   },
   {
     memoryInGb: 32,
-    concurrencyLevel: 10,
+    concurrencyLevel: 5,
     tasks: [
       async () => 1,
       async () => 2,
@@ -42,7 +42,7 @@ export const limitFixtures = [
   },
   {
     memoryInGb: 64,
-    concurrencyLevel: 15,
+    concurrencyLevel: 5,
     tasks: [
       async () => 1,
       async () => 2,
@@ -59,7 +59,7 @@ export const limitFixtures = [
   },
   {
     memoryInGb: 128,
-    concurrencyLevel: 20,
+    concurrencyLevel: 5,
     tasks: [
       async () => 1,
       async () => 2,
