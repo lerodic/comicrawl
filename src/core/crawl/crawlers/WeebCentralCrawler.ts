@@ -70,7 +70,8 @@ class WeebCentralCrawler implements Crawler {
         }))
         .filter((link) =>
           link.url?.startsWith("https://weebcentral.com/chapters")
-        );
+        )
+        .reverse();
     });
   }
 
